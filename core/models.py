@@ -20,10 +20,11 @@ class Profile(models.Model):
 class Paper(models.Model):
     STATUS_CHOICES = (
         ('submitted', 'Submitted'),
-        ('assigned', 'Assigned to Reviewer'),   # ← new
+        ('assigned', 'Assigned to Reviewer'),
         ('under_review', 'Under Review'),
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
+        ('scheduled', 'Scheduled'),
     )
 
     title = models.CharField(max_length=255)
@@ -35,11 +36,7 @@ class Paper(models.Model):
     )
     file = models.FileField(upload_to='papers/')
 
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='submitted'
-    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='submitted')
 
     reviewer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -60,11 +57,7 @@ class Paper(models.Model):
 
 
 class ReviewAssignment(models.Model):
-    paper = models.ForeignKey(
-        Paper,
-        on_delete=models.CASCADE,
-        related_name='review_assignments'
-    )
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE, related_name='review_assignments')
     reviewer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -76,7 +69,7 @@ class ReviewAssignment(models.Model):
 
     def __str__(self):
         return f"{self.paper.title} → {self.reviewer.username}"
-    
+
 
 class ConferenceSession(models.Model):
     SESSION_TYPES = (
@@ -97,21 +90,21 @@ class ConferenceSession(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} - {self.date} ({self.start_time})"
-    
+        return f"{self.title} - {self.date}"
+
 
 class PaperPresentation(models.Model):
     paper = models.OneToOneField(
         Paper,
         on_delete=models.CASCADE,
-        related_name='presentation_slot'
+        related_name='presentation_slot'   # ← this is the key for author slot query
     )
     session = models.ForeignKey(
         ConferenceSession,
         on_delete=models.CASCADE,
         related_name='presentations'
     )
-    presentation_order = models.PositiveIntegerField(default=1)  # order in the session
+    presentation_order = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.paper.title} in {self.session.title}"

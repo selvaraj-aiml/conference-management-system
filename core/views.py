@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from core.models import Paper, Profile, ReviewAssignment, ConferenceSession
+from core.models import Paper, Profile, ReviewAssignment, ConferenceSession, PaperPresentation
 from users.models import User
 
 @login_required
@@ -19,7 +19,6 @@ def admin_dashboard(request):
 
     papers = Paper.objects.all().order_by('-created_at')
 
-    # For assign form (if POST)
     if request.method == 'POST' and 'assign_reviewer' in request.POST:
         paper_id = request.POST.get('paper_id')
         reviewer_id = request.POST.get('reviewer_id')
@@ -49,7 +48,6 @@ def author_dashboard(request):
     if request.user.role != 'author':
         return redirect(request.user.get_dashboard_url())
 
-    # Get only THIS author's papers, newest first
     papers = Paper.objects.filter(author=request.user).order_by('-created_at')
 
     return render(request, "dashboards/author_dashboard.html", {
@@ -62,7 +60,6 @@ def reviewer_dashboard(request):
         messages.error(request, "Only reviewers can access this dashboard.")
         return redirect(request.user.get_dashboard_url())
 
-    # Get only papers assigned to this reviewer
     assigned_papers = Paper.objects.filter(reviewer=request.user).order_by('-created_at')
 
     return render(request, "dashboards/reviewer_dashboard.html", {
@@ -73,7 +70,12 @@ def reviewer_dashboard(request):
 def participant_dashboard(request):
     if request.user.role != 'participant':
         return redirect(request.user.get_dashboard_url())
-    return render(request, "dashboards/participant_dashboard.html")
+
+    sessions = ConferenceSession.objects.order_by('date', 'start_time')
+
+    return render(request, "dashboards/participant_dashboard.html", {
+        'sessions': sessions,
+    })
 
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
@@ -115,7 +117,6 @@ def update_user(request, user_id):
 
 @login_required
 def review_paper(request, paper_id):
-    # Only allow the assigned reviewer to review
     paper = get_object_or_404(Paper, id=paper_id, reviewer=request.user)
 
     if request.method == "POST":
@@ -182,7 +183,6 @@ def admin_session_edit(request, session_id):
 def admin_assign_paper_to_session(request, paper_id):
     paper = get_object_or_404(Paper, id=paper_id)
 
-    # Only allow assigning accepted papers
     if paper.status != 'accepted':
         messages.error(request, "Only accepted papers can be assigned to a session.")
         return redirect('admin_dashboard')
@@ -194,7 +194,6 @@ def admin_assign_paper_to_session(request, paper_id):
         try:
             session = ConferenceSession.objects.get(id=session_id)
             
-            # Check if paper already assigned
             if PaperPresentation.objects.filter(paper=paper).exists():
                 messages.error(request, "This paper is already assigned to a session.")
             else:
@@ -203,7 +202,7 @@ def admin_assign_paper_to_session(request, paper_id):
                     session=session,
                     presentation_order=order
                 )
-                paper.status = 'scheduled'  # or keep 'accepted' — your choice
+                paper.status = 'scheduled'
                 paper.save()
                 messages.success(request, f"Paper '{paper.title}' assigned to {session.title} at position {order}")
         except Exception as e:
@@ -211,7 +210,6 @@ def admin_assign_paper_to_session(request, paper_id):
 
         return redirect('admin_dashboard')
 
-    # Show form
     sessions = ConferenceSession.objects.order_by('date', 'start_time')
 
     return render(request, 'admin/assign_paper_to_session.html', {
