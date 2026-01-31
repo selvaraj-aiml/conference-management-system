@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from core.models import Paper, Profile, ReviewAssignment, ConferenceSession, PaperPresentation
+from core.models import Paper, Profile, ReviewAssignment, ConferenceSession, PaperPresentation, SessionRegistration
 from users.models import User
 
 @login_required
@@ -19,6 +19,7 @@ def admin_dashboard(request):
 
     papers = Paper.objects.all().order_by('-created_at')
 
+    # For assign form (if POST)
     if request.method == 'POST' and 'assign_reviewer' in request.POST:
         paper_id = request.POST.get('paper_id')
         reviewer_id = request.POST.get('reviewer_id')
@@ -48,6 +49,7 @@ def author_dashboard(request):
     if request.user.role != 'author':
         return redirect(request.user.get_dashboard_url())
 
+    # Get only THIS author's papers, newest first
     papers = Paper.objects.filter(author=request.user).order_by('-created_at')
 
     return render(request, "dashboards/author_dashboard.html", {
@@ -60,6 +62,7 @@ def reviewer_dashboard(request):
         messages.error(request, "Only reviewers can access this dashboard.")
         return redirect(request.user.get_dashboard_url())
 
+    # Get only papers assigned to this reviewer
     assigned_papers = Paper.objects.filter(reviewer=request.user).order_by('-created_at')
 
     return render(request, "dashboards/reviewer_dashboard.html", {
@@ -73,8 +76,11 @@ def participant_dashboard(request):
 
     sessions = ConferenceSession.objects.order_by('date', 'start_time')
 
+    registrations = SessionRegistration.objects.filter(participant=request.user).values_list('session_id', flat=True)
+
     return render(request, "dashboards/participant_dashboard.html", {
         'sessions': sessions,
+        'registrations': registrations,
     })
 
 def is_admin(user):
@@ -216,3 +222,31 @@ def admin_assign_paper_to_session(request, paper_id):
         'paper': paper,
         'sessions': sessions,
     })
+
+@login_required
+def register_for_session(request, session_id):
+    if request.user.role != 'participant':
+        messages.error(request, "Only participants can register for sessions.")
+        return redirect('participant_dashboard')
+
+    session = get_object_or_404(ConferenceSession, id=session_id)
+
+    if request.method == 'POST':
+        if SessionRegistration.objects.filter(session=session, participant=request.user).exists():
+            messages.error(request, "You are already registered for this session.")
+        else:
+            SessionRegistration.objects.create(session=session, participant=request.user)
+            messages.success(request, "Successfully registered for the session!")
+
+        return redirect('participant_dashboard')
+
+    return render(request, 'dashboards/register_session.html', {'session': session})
+
+@login_required
+def generate_badge(request):
+    if request.user.role != 'participant':
+        return redirect('participant_dashboard')
+
+    registrations = SessionRegistration.objects.filter(participant=request.user).select_related('session')
+
+    return render(request, 'dashboards/badge.html', {'registrations': registrations})

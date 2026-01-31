@@ -23,4 +23,6 @@ urlpatterns = [
     path('sessions/<int:session_id>/edit/', views.admin_session_edit, name='admin_session_edit'),
     # Paper assignment (changed prefix to avoid admin/ conflict)
     path('assign-paper/<int:paper_id>/', views.admin_assign_paper_to_session, name='admin_assign_paper_to_session'),
+    path('register-session/<int:session_id>/', views.register_for_session, name='register_for_session'),
+    path('generate-badge/', views.generate_badge, name='generate_badge'),
 ]

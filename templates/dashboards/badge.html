@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Conference Badge</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        .badge { border: 2px solid #007bff; padding: 20px; max-width: 400px; margin: 0 auto; text-align: center; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="badge">
+        <h1>Conference Badge</h1>
+        <p><strong>Name:</strong> {{ request.user.username }}</p>
+        <p><strong>Role:</strong> Participant</p>
+
+        <h2>Registered Sessions</h2>
+        {% if registrations %}
+        <ul>
+            {% for reg in registrations %}
+            <li>{{ reg.session.title }} - {{ reg.session.date }} ({{ reg.session.start_time }})</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No registrations yet.</p>
+        {% endif %}
+
+        <p>Print this page for entry.</p>
+    </div>
+</body>
+</html>

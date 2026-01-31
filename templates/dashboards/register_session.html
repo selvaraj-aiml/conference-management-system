@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register for Session</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        form { max-width: 600px; }
+        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #218838; }
+        .back { margin-top: 20px; display: block; color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>Register for {{ session.title }}</h1>
+    <p>Date: {{ session.date }}</p>
+    <p>Time: {{ session.start_time }} - {{ session.end_time }}</p>
+    <p>Hall: {{ session.hall|default:"-" }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Confirm Registration</button>
+    </form>
+
+    <a href="{% url 'participant_dashboard' %}" class="back">Back to Dashboard</a>
+</body>
+</html>

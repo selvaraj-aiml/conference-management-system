@@ -108,3 +108,16 @@ class PaperPresentation(models.Model):
 
     def __str__(self):
         return f"{self.paper.title} in {self.session.title}"
+    
+
+class SessionRegistration(models.Model):
+    session = models.ForeignKey(ConferenceSession, on_delete=models.CASCADE, related_name='registrations')
+    participant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='session_registrations')
+    registered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('session', 'participant')
+
+    def __str__(self):
+        return f"{self.participant.username} registered for {self.session.title}"
+    
