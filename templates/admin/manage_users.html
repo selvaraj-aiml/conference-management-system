@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Users - Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        .stats { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .card { padding: 15px 25px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 140px; text-align: center; }
+        .card h4 { margin: 0 0 8px; color: #007bff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: #007bff; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>Manage Users</h1>
+
+    <div class="stats">
+        <div class="card">
+            <h4>Total Users</h4>
+            <p>{{ users.count }}</p>
+        </div>
+        <div class="card">
+            <h4>Admins</h4>
+            <p>{{ total_admins }}</p>
+        </div>
+        <div class="card">
+            <h4>Authors</h4>
+            <p>{{ total_authors }}</p>
+        </div>
+        <div class="card">
+            <h4>Reviewers</h4>
+            <p>{{ total_reviewers }}</p>
+        </div>
+        <div class="card">
+            <h4>Participants</h4>
+            <p>{{ total_participants }}</p>
+        </div>
+    </div> 
+    <p style="margin-bottom: 20px;">
+    <a href="{% url 'add_user' %}">
+        <button style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+            + Add New User
+        </button>
+    </a>
+</p>
+
+    <table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Joined On</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+
+            <form action="{% url 'update_user' u.id %}" method="POST">
+                {% csrf_token %}
+
+                <td>
+                    <select name="role">
+                        <option value="admin" {% if u.role == "admin" %}selected{% endif %}>Admin</option>
+                        <option value="author" {% if u.role == "author" %}selected{% endif %}>Author</option>
+                        <option value="reviewer" {% if u.role == "reviewer" %}selected{% endif %}>Reviewer</option>
+                        <option value="participant" {% if u.role == "participant" %}selected{% endif %}>Participant</option>
+                    </select>
+                </td>
+
+                <td>{{ u.date_joined|date:"d M Y" }}</td>
+
+                <td>
+                    <select name="status">
+                        <option value="active" {% if u.is_active %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if not u.is_active %}selected{% endif %}>Inactive</option>
+                    </select>
+                </td>
+
+                <td>
+                    <button type="submit">Update</button>
+                </td>
+            </form>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No users yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+    <p style="margin-top: 20px;">
+        <a href="{% url 'admin_dashboard' %}">Back to Dashboard</a>
+    </p>
+</body>
+</html>

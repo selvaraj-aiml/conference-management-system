@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Author Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        .btn { 
+            padding: 12px 24px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            text-decoration: none; 
+            display: inline-block; 
+        }
+        .btn:hover { background: #0056b3; }
+        .logout-btn { 
+            padding: 10px 20px; 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+        }
+        .logout-btn:hover { background: #c82333; }
+        .message { 
+            padding: 12px; 
+            margin: 15px 0; 
+            border-radius: 4px; 
+            font-weight: bold; 
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            background: white; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { background: #007bff; color: white; }
+        tr:hover { background: #f1f1f1; }
+    </style>
+</head>
+<body>
+    <!-- Messages (success/error after submit) -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Logout button -->
+    <form method="post" action="{% url 'logout' %}" style="position: absolute; top: 20px; right: 20px;">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+
+    <h1>Author Dashboard</h1>
+    <p>Welcome, {{ request.user.username }}! Submit your papers, check review status, see deadlines here.</p>
+
+    <!-- Submit button -->
+    <a href="{% url 'submit_paper' %}" class="btn">Submit New Paper</a>
+
+    <!-- Your submitted papers -->
+    <h2 style="margin-top: 40px;">Your Submitted Papers</h2>
+
+    {% if papers %}
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Submitted On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for paper in papers %}
+            <tr>
+                <td>{{ paper.title }}</td>
+                <td>{{ paper.status|title }}</td>
+                <td>{{ paper.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666;">No papers submitted yet.</p>
+    {% endif %}
+
+    <p style="margin-top: 40px; color: #666;">Your submitted papers will appear here after submission.</p>
+</body>
+</html>

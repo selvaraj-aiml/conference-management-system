@@ -1,0 +1,32 @@
+<h2>Edit Session: {{ session.title }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Title</label><br>
+    <input type="text" name="title" value="{{ session.title }}" required><br><br>
+
+    <label>Session Type</label><br>
+    <select name="session_type" required>
+        {% for value, label in session.SESSION_TYPES %}
+            <option value="{{ value }}" {% if session.session_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>Date</label><br>
+    <input type="date" name="date" value="{{ session.date|date:'Y-m-d' }}" required><br><br>
+
+    <label>Start Time</label><br>
+    <input type="time" name="start_time" value="{{ session.start_time|time:'H:i' }}" required><br><br>
+
+    <label>End Time</label><br>
+    <input type="time" name="end_time" value="{{ session.end_time|time:'H:i' }}" required><br><br>
+
+    <label>Hall</label><br>
+    <input type="text" name="hall" value="{{ session.hall }}"><br><br>
+
+    <label>Speaker (optional)</label><br>
+    <input type="text" name="speaker" value="{{ session.speaker }}"><br><br>
+
+    <button type="submit">Save Changes</button>
+</form>

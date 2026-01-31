@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Paper to Session</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        form { max-width: 600px; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        select, input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #218838; }
+        .back { margin-top: 20px; display: block; color: #007bff; text-decoration: none; }
+        .back:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Assign Paper: {{ paper.title }}</h1>
+    <p><strong>Author:</strong> {{ paper.author.username }}</p>
+    <p><strong>Status:</strong> {{ paper.status|title }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Choose Session</label>
+        <select name="session_id" required>
+            <option value="">-- Select a Session --</option>
+            {% for session in sessions %}
+            <option value="{{ session.id }}">
+                {{ session.title }} | {{ session.date }} | {{ session.start_time }} - {{ session.end_time }} | {{ session.hall }}
+            </option>
+            {% endfor %}
+        </select><br><br>
+
+        <label>Presentation Order (1 = first)</label>
+        <input type="number" name="presentation_order" value="1" min="1" required><br><br>
+
+        <button type="submit">Assign Paper to Session</button>
+    </form>
+
+    <a href="{% url 'admin_dashboard' %}" class="back">Back to Admin Dashboard</a>
+</body>
+</html>

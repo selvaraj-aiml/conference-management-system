@@ -1,0 +1,33 @@
+<h2>Add New Session</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label>Title</label><br>
+    <input type="text" name="title" required><br><br>
+
+    <label>Session Type</label><br>
+    <select name="session_type" required>
+        <option value="KEYNOTE">Keynote</option>
+        <option value="PRESENTATION">Paper Presentation</option>
+        <option value="WORKSHOP">Workshop</option>
+        <option value="PANEL">Panel Discussion</option>
+    </select><br><br>
+
+    <label>Date</label><br>
+    <input type="date" name="date" required><br><br>
+
+    <label>Start Time</label><br>
+    <input type="time" name="start_time" required><br><br>
+
+    <label>End Time</label><br>
+    <input type="time" name="end_time" required><br><br>
+
+    <label>Hall</label><br>
+    <input type="text" name="hall"><br><br>
+
+    <label>Speaker (optional)</label><br>
+    <input type="text" name="speaker"><br><br>
+
+    <button type="submit">Create Session</button>
+</form>

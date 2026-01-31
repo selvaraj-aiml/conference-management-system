@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Your Paper</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        form { max-width: 600px; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { height: 120px; }
+        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <h1>Submit Your Paper</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <label>Paper Title</label>
+        <input type="text" name="title" required><br><br>
+
+        <label>Abstract</label>
+        <textarea name="abstract" required></textarea><br><br>
+
+        <label>Upload PDF</label>
+        <input type="file" name="file" accept=".pdf" required><br><br>
+
+        <button type="submit">Submit Paper</button>
+    </form>
+
+    <p><a href="{% url 'author_dashboard' %}">Back to Dashboard</a></p>
+</body>
+</html>

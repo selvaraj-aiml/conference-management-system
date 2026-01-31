@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Paper</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        form { max-width: 600px; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        select, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { height: 150px; }
+        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Review: {{ paper.title }}</h1>
+    <p><strong>Author:</strong> {{ paper.author.username }}</p>
+    <p><strong>Abstract:</strong> {{ paper.abstract|linebreaks }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Decision</label>
+        <select name="decision" required>
+            <option value="accepted">Accept</option>
+            <option value="rejected">Reject</option>
+        </select><br><br>
+
+        <label>Comments</label>
+        <textarea name="review_comments" placeholder="Your detailed review..."></textarea><br><br>
+
+        <button type="submit">Submit Review</button>
+    </form>
+
+    <p><a href="{% url 'reviewer_dashboard' %}">Back to Dashboard</a></p>
+</body>
+</html>

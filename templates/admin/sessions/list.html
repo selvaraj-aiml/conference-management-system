@@ -1,0 +1,30 @@
+<h2>Conference Sessions</h2>
+
+<a href="{% url 'admin_session_create' %}" class="btn">Add New Session</a>
+
+{% if sessions %}
+<table border="1" cellpadding="8" style="margin-top: 20px;">
+    <tr>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Hall</th>
+        <th>Speaker</th>
+        <th>Action</th>
+    </tr>
+    {% for session in sessions %}
+    <tr>
+        <td>{{ session.title }}</td>
+        <td>{{ session.get_session_type_display }}</td>
+        <td>{{ session.date }}</td>
+        <td>{{ session.start_time }} - {{ session.end_time }}</td>
+        <td>{{ session.hall|default:"-" }}</td>
+        <td>{{ session.speaker|default:"-" }}</td>
+        <td><a href="{% url 'admin_session_edit' session.id %}">Edit</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No sessions created yet.</p>
+{% endif %}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Participant Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        h1 { color: #333; }
+        .btn { 
+            padding: 12px 24px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            text-decoration: none; 
+            display: inline-block; 
+        }
+        .btn:hover { background: #0056b3; }
+        .logout-btn { 
+            padding: 10px 20px; 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+        }
+        .logout-btn:hover { background: #c82333; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            background: white; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { background: #007bff; color: white; }
+        tr:hover { background: #f1f1f1; }
+        .presentation-list { margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <!-- Logout button -->
+    <form method="post" action="{% url 'logout' %}" style="position: absolute; top: 20px; right: 20px;">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+
+    <h1>Participant Dashboard</h1>
+
+    <p>Welcome, {{ request.user.username }}! View the conference schedule below.</p>
+
+    <h2>Conference Schedule</h2>
+
+    {% if sessions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Hall</th>
+                <th>Speaker</th>
+                <th>Presentations</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td>{{ session.title }}</td>
+                <td>{{ session.session_type|title }}</td>
+                <td>{{ session.date }}</td>
+                <td>{{ session.start_time }} - {{ session.end_time }}</td>
+                <td>{{ session.hall|default:"-" }}</td>
+                <td>{{ session.speaker|default:"-" }}</td>
+                <td>
+                    {% if session.presentations.all %}
+                    <ul class="presentation-list">
+                        {% for pres in session.presentations.all|dictsort:"presentation_order" %}
+                        <li>{{ pres.presentation_order }}. {{ pres.paper.title }} (Author: {{ pres.paper.author.username }})</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    No presentations assigned yet.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No sessions scheduled yet.</p>
+    {% endif %}
+
+    <!-- Add more features here later, like register button or badge -->
+</body>
+</html>
