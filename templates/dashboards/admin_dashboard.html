@@ -1,124 +1,284 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        h1 { color: #333; }
-        .stats-container { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 40px; }
-        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex: 1; min-width: 200px; text-align: center; }
-        .stat-card h3 { margin: 0 0 10px; color: #007bff; }
-        .stat-card p { font-size: 24px; font-weight: bold; margin: 0; }
-        .btn { padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; }
-        .btn:hover { background: #0056b3; }
-        .btn-sessions { background: #6f42c1; margin: 20px 0; }
-        .btn-sessions:hover { background: #5a32a3; }
-        .btn-session { background: #17a2b8; font-size: 14px; padding: 8px 12px; }
-        .btn-session:hover { background: #138496; }
-        .logout-btn { padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; position: absolute; top: 20px; right: 20px; }
-        .logout-btn:hover { background: #c82333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #007bff; color: white; }
-        tr:hover { background: #f1f1f1; }
-        .assign-form { display: inline-flex; gap: 10px; align-items: center; }
-    </style>
-</head>
-<body>
-    <!-- Logout button -->
-    <form method="post" action="{% url 'logout' %}" style="position: absolute; top: 20px; right: 20px;">
-        {% csrf_token %}
-        <button type="submit" class="logout-btn">Logout</button>
-    </form>
+{% extends 'base.html' %}
+{% block title %}Dashboard | ConfSys{% endblock %}
 
-    <h1>Admin Dashboard</h1>
+{% block extra_css %}
+<style>
+/* STATS GRID - Professional Edition */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px;}
 
-    <p style="margin-bottom: 20px;">
-        <a href="{% url 'manage_users' %}" class="btn">Manage Users</a>
-    </p>
+.stat-card{
+  position:relative;overflow:hidden;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:var(--r);padding:24px;cursor:default;
+  box-shadow:var(--shadow-sm);
+  animation:riseUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.stat-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--c-border-l);}
 
-    <!-- Stats cards -->
-    <div class="stats-container">
-        <div class="stat-card">
-            <h3>Total Authors</h3>
-            <p>{{ stats.total_authors }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Total Reviewers</h3>
-            <p>{{ stats.total_reviewers }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Total Participants</h3>
-            <p>{{ stats.total_participants }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Total Papers</h3>
-            <p>{{ stats.total_papers }}</p>
-        </div>
-        <div class="stat-card">
-            <h3>Pending Reviews</h3>
-            <p>{{ stats.pending_reviews }}</p>
-        </div>
+/* Subtle light-mode shimmer */
+.stat-card::after{content:'';position:absolute;top:-50%;left:-60%;width:35%;height:200%;background:linear-gradient(105deg,transparent,rgba(0,0,0,0.015),transparent);transform:skewX(-15deg);transition:left 0.55s ease;pointer-events:none;}
+.stat-card:hover::after{left:130%;}
+
+.stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.stat-pill{font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;text-transform:uppercase;letter-spacing:0.05em;}
+.stat-num{font-family:var(--f-head);font-size:2.5rem;font-weight:700;letter-spacing:-0.03em;line-height:1;margin-bottom:6px;color:var(--text-1);}
+.stat-lbl{font-size:0.75rem;color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;}
+.stat-bar-wrap{margin-top:18px;height:4px;background:var(--c-hover);border-radius:2px;overflow:hidden;}
+.stat-bar-fill{height:100%;border-radius:2px;animation:fillBar 1.4s cubic-bezier(0.16,1,0.3,1) both;}
+@keyframes fillBar{from{width:0}to{}}
+
+/* Professional Color Variants */
+.sv-primary .stat-icon{background:var(--primary-dim);color:var(--primary);}
+.sv-primary .stat-pill{background:var(--primary-dim);color:var(--primary);}
+.sv-primary .stat-bar-fill{background:var(--primary);}
+
+.sv-info .stat-icon{background:var(--info-dim);color:var(--info);}
+.sv-info .stat-pill{background:var(--info-dim);color:var(--info);}
+.sv-info .stat-bar-fill{background:var(--info);}
+
+.sv-success .stat-icon{background:var(--success-dim);color:var(--success);}
+.sv-success .stat-pill{background:var(--success-dim);color:var(--success);}
+.sv-success .stat-bar-fill{background:var(--success);}
+
+.sv-warning .stat-icon{background:var(--warning-dim);color:var(--warning);}
+.sv-warning .stat-pill{background:var(--warning-dim);color:var(--warning);}
+.sv-warning .stat-bar-fill{background:var(--warning);}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;animation:fadeUp 0.6s 0.3s both;}
+.sec-title{font-family:var(--f-head);font-size:1.2rem;font-weight:700;color:var(--text-1);letter-spacing:-0.01em;display:flex;align-items:center;gap:12px;}
+.count-chip{font-size:0.75rem;font-weight:600;padding:4px 12px;border-radius:20px;background:var(--primary-dim);color:var(--primary);font-family:var(--f-body);}
+.filter-btn{display:flex;align-items:center;gap:8px;font-size:0.85rem;font-weight:600;color:var(--text-2);background:var(--c-surface);border:1px solid var(--c-border);padding:8px 16px;border-radius:10px;transition:all 0.2s;cursor:pointer;box-shadow:var(--shadow-sm);}
+.filter-btn:hover{color:var(--text-1);border-color:var(--c-border-l);box-shadow:var(--shadow-md);}
+
+/* TABLE ITEMS */
+.t-wrap{animation:fadeUp 0.6s 0.35s both;}
+.paper-cell{display:flex;flex-direction:column;gap:4px;max-width:280px;}
+.paper-ttl{font-weight:600;color:var(--text-1);font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.paper-auth{display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--text-2);font-weight:500;}
+.a-dot{width:22px;height:22px;border-radius:6px;flex-shrink:0;background:var(--primary-dim);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;}
+
+/* Table Badges */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:0.7rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;}
+.bd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.b-success{background:#dcfce7;color:#166534;} .b-success .bd{background:#166534;}
+.b-warn{background:#fef3c7;color:#92400e;}    .b-warn .bd{background:#92400e;}
+.b-info{background:#dbeafe;color:#1e40af;}    .b-info .bd{background:#1e40af;}
+.b-muted{background:#f1f5f9;color:#475569;}   .b-muted .bd{background:#475569;}
+
+.f-row{display:flex;align-items:center;gap:10px;}
+.f-row .f-select{min-width:160px;}
+
+.btn-assign{padding:9px 16px;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:var(--f-body);white-space:nowrap;transition:all 0.2s;}
+.btn-ap{background:var(--primary);color:#fff;box-shadow:0 2px 8px var(--primary-glow);}
+.btn-ap:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,70,229,0.3);background:#4338ca;}
+.btn-ag{background:var(--c-surface);color:var(--text-1);border:1px solid var(--c-border);box-shadow:var(--shadow-sm);}
+.btn-ag:hover{border-color:var(--c-border-l);box-shadow:var(--shadow-md);}
+
+.act-link{display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:600;color:var(--primary);padding:8px 14px;border-radius:8px;text-decoration:none;background:var(--primary-dim);transition:all 0.2s;}
+.act-link:hover{background:rgba(79,70,229,0.12);transform:translateY(-1px);}
+.pend{font-size:0.8rem;color:var(--text-3);display:flex;align-items:center;gap:6px;font-weight:500;}
+.done-reviewer{display:flex;align-items:center;gap:8px;color:var(--success);font-size:0.85rem;font-weight:600;}
+
+/* EMPTY STATE */
+.empty{padding:80px 30px;text-align:center;background:var(--c-surface);border:1px dashed var(--c-border-l);border-radius:var(--r);box-shadow:var(--shadow-sm);}
+.empty-ico{width:64px;height:64px;margin:0 auto 20px;border-radius:16px;background:var(--c-hover);color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:1.75rem;}
+.empty h3{font-family:var(--f-head);font-size:1.2rem;font-weight:700;color:var(--text-1);margin-bottom:8px;}
+.empty p{color:var(--text-2);font-size:0.9rem;margin-bottom:24px;}
+
+@media(max-width:1200px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.stats-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header anim-fade">
+  <div>
+    <h1 class="page-title">Dashboard Overview</h1>
+    <p class="page-sub">Manage papers, reviewers, and sessions from one place.</p>
+  </div>
+  <div style="display:flex;gap:12px;">
+    <a href="{% url 'manage_users' %}" class="btn btn-ghost"><i class="fas fa-users"></i> Users</a>
+    <a href="{% url 'admin_session_list' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Session</a>
+  </div>
+</div>
+
+<div class="stats-grid">
+
+  <div class="stat-card sv-primary" style="animation-delay:.05s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-feather-alt"></i></div>
+      <div class="stat-pill"><i class="fas fa-arrow-trend-up"></i> Active</div>
     </div>
+    <div class="stat-num">{{ stats.total_authors|default:"0" }}</div>
+    <div class="stat-lbl">Total Authors</div>
+    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:72%;animation-delay:.5s"></div></div>
+  </div>
 
-    <!-- Sessions button -->
-    <a href="{% url 'admin_session_list' %}" class="btn btn-sessions">Manage Conference Sessions</a>
+  <div class="stat-card sv-info" style="animation-delay:.12s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+      <div class="stat-pill"><i class="fas fa-arrow-trend-up"></i> Active</div>
+    </div>
+    <div class="stat-num">{{ stats.total_reviewers|default:"0" }}</div>
+    <div class="stat-lbl">Reviewers</div>
+    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:55%;animation-delay:.6s"></div></div>
+  </div>
 
-    <!-- Submitted Papers Table -->
-    <h2>Submitted Papers</h2>
+  <div class="stat-card sv-success" style="animation-delay:.19s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-pill"><i class="fas fa-minus"></i> Stable</div>
+    </div>
+    <div class="stat-num">{{ stats.total_participants|default:"0" }}</div>
+    <div class="stat-lbl">Participants</div>
+    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:85%;animation-delay:.7s"></div></div>
+  </div>
 
-    {% if papers %}
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Status</th>
-                <th>Submitted On</th>
-                <th>Assign Reviewer</th>
-                <th>Assign to Session</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for paper in papers %}
-            <tr>
-                <td>{{ paper.title }}</td>
-                <td>{{ paper.author.username }}</td>
-                <td>{{ paper.status|title }}</td>
-                <td>{{ paper.created_at|date:"d M Y" }}</td>
-                <td>
-                    {% if paper.status == 'submitted' or paper.status == 'assigned' %}
-                    <form method="POST" class="assign-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="paper_id" value="{{ paper.id }}">
-                        <select name="reviewer_id">
-                            <option value="">Select Reviewer</option>
-                            {% for reviewer in reviewers %}
-                            <option value="{{ reviewer.id }}">{{ reviewer.username }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" name="assign_reviewer">Assign</button>
-                    </form>
-                    {% else %}
-                    Assigned to: {{ paper.reviewer.username|default:"-" }}
-                    {% endif %}
-                </td>
-                <td>
-                    {% if paper.status == 'accepted' %}
-                        <a href="{% url 'admin_assign_paper_to_session' paper.id %}" class="btn btn-session">
-                            Assign to Session
-                        </a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+  <div class="stat-card sv-warning" style="animation-delay:.26s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+      <div class="stat-pill"><i class="fas fa-arrow-trend-up"></i> New</div>
+    </div>
+    <div class="stat-num">{{ stats.total_papers|default:"0" }}</div>
+    <div class="stat-lbl">Papers Submitted</div>
+    <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:63%;animation-delay:.8s"></div></div>
+  </div>
+
+</div>
+
+<div class="sec-head">
+  <div class="sec-title">
+    Recent Paper Submissions
+    {% if papers %}<span class="count-chip">{{ papers|length }} Paper{% if papers|length != 1 %}s{% endif %}</span>{% endif %}
+  </div>
+  <div class="sec-right">
+    <button class="filter-btn"><i class="fas fa-sliders"></i> Filter</button>
+  </div>
+</div>
+
+{% if papers %}
+<div class="t-wrap">
+  <div class="t-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Paper</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Assign Reviewer</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for paper in papers %}
+        <tr>
+
+          <td>
+            <div class="paper-cell">
+              <div class="paper-ttl">{{ paper.title }}</div>
+              <div class="paper-auth">
+                <div class="a-dot">{{ paper.author.username|first|upper }}</div>
+                {{ paper.author.username }}
+              </div>
+            </div>
+          </td>
+
+          <td>
+            {% if paper.status == 'accepted' %}
+              <span class="badge b-success"><span class="bd"></span>Accepted</span>
+            {% elif paper.status == 'assigned' %}
+              <span class="badge b-info"><span class="bd"></span>Assigned</span>
+            {% elif paper.status == 'rejected' %}
+              <span class="badge b-muted"><span class="bd"></span>Rejected</span>
+            {% else %}
+              <span class="badge b-warn"><span class="bd"></span>Submitted</span>
+            {% endif %}
+          </td>
+
+          <td style="font-size:.85rem;">
+            <i class="fas fa-clock" style="color:var(--text-3);margin-right:6px;"></i>
+            {{ paper.created_at|date:"d M Y" }}
+          </td>
+
+          <td>
+            {% if paper.status == 'submitted' or paper.status == 'assigned' %}
+            <form method="POST" action="." style="margin:0;">
+              {% csrf_token %}
+              <input type="hidden" name="paper_id" value="{{ paper.id }}">
+              <div class="f-row">
+                <select name="reviewer_id" class="f-select" required>
+                  <option value="" disabled {% if not paper.reviewer %}selected{% endif %}>Select reviewer…</option>
+                  {% for reviewer in reviewers %}
+                  <option value="{{ reviewer.id }}" {% if paper.reviewer and paper.reviewer.id == reviewer.id %}selected{% endif %}>
+                    {{ reviewer.username }}
+                  </option>
+                  {% endfor %}
+                </select>
+                <button type="submit" name="action" value="assign_reviewer"
+                  class="btn-assign {% if paper.status == 'assigned' %}btn-ag{% else %}btn-ap{% endif %}">
+                  {% if paper.status == 'assigned' %}Update{% else %}Assign{% endif %}
+                </button>
+              </div>
+            </form>
+            {% else %}
+            <div class="done-reviewer">
+              <i class="fas fa-circle-check"></i>{{ paper.reviewer.username|default:"Completed" }}
+            </div>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if paper.status == 'accepted' %}
+              <a href="{% url 'admin_assign_paper_to_session' paper.id %}" class="act-link">
+                <i class="fas fa-calendar-plus"></i> Add to Session
+              </a>
+            {% else %}
+              <span class="pend"><i class="fas fa-hourglass-half"></i>Awaiting review</span>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-    {% else %}
-    <p>No papers submitted yet.</p>
-    {% endif %}
-</body>
-</html>
+  </div>
+</div>
+
+{% else %}
+<div class="empty anim-fade" style="animation-delay:.35s;">
+  <div class="empty-ico"><i class="fas fa-inbox"></i></div>
+  <h3>No submissions yet</h3>
+  <p>Once authors start submitting their papers, you will manage everything right here.</p>
+  <a href="{% url 'manage_users' %}" class="btn btn-ghost"><i class="fas fa-user-plus"></i> Invite Authors</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Count-up animation for stat numbers
+function easeOut(t){return 1-Math.pow(1-t,3);}
+document.querySelectorAll('.stat-num').forEach(el=>{
+  const raw = el.textContent.trim();
+  const target = parseInt(raw.replace(/\D/g,''), 10);
+  if(isNaN(target) || target === 0) return;
+  const card = el.closest('.stat-card');
+  const delay = (parseFloat(card.style.animationDelay||'0')*1000) + 400;
+  el.textContent = '0';
+  setTimeout(()=>{
+    const start = performance.now();
+    const dur = 1500;
+    (function step(now){
+      const p = Math.min((now-start)/dur, 1);
+      el.textContent = Math.round(easeOut(p)*target);
+      if(p<1) requestAnimationFrame(step);
+    })(performance.now());
+  }, delay);
+});
+</script>
+{% endblock %}
