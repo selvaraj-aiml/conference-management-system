@@ -1,34 +1,284 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Conference Badge</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        h1 { color: #333; }
-        .badge { border: 2px solid #007bff; padding: 20px; max-width: 400px; margin: 0 auto; text-align: center; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        ul { list-style: none; padding: 0; }
-        li { margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-    <div class="badge">
-        <h1>Conference Badge</h1>
-        <p><strong>Name:</strong> {{ request.user.username }}</p>
-        <p><strong>Role:</strong> Participant</p>
+{% extends 'base.html' %}
 
-        <h2>Registered Sessions</h2>
-        {% if registrations %}
-        <ul>
-            {% for reg in registrations %}
-            <li>{{ reg.session.title }} - {{ reg.session.date }} ({{ reg.session.start_time }})</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>No registrations yet.</p>
-        {% endif %}
+{% block title %}My Conference Badge | ConfSys{% endblock %}
 
-        <p>Print this page for entry.</p>
+{% block extra_css %}
+<style>
+/* --- BADGE PREVIEW AREA --- */
+.badge-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+/* --- THE ID CARD --- */
+.id-card {
+    width: 340px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--c-border-l);
+    transform-origin: top center;
+}
+
+/* Fake lanyard hole punch */
+.lanyard-hole {
+    width: 60px;
+    height: 12px;
+    background: var(--c-bg);
+    border-radius: 20px;
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.id-header {
+    background: linear-gradient(135deg, var(--primary), #3b82f6);
+    padding: 45px 20px 25px;
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.id-header::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: #ffffff;
+    transform: skewY(-3deg);
+}
+
+.conf-title {
+    font-family: var(--f-head);
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.conf-year {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    opacity: 0.8;
+}
+
+.id-body {
+    padding: 10px 30px 30px;
+    text-align: center;
+}
+
+.id-avatar {
+    width: 80px;
+    height: 80px;
+    background: var(--c-elevated);
+    border: 3px solid #ffffff;
+    box-shadow: var(--shadow-md);
+    border-radius: 50%;
+    margin: -40px auto 15px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    font-family: var(--f-head);
+}
+
+.id-name {
+    font-family: var(--f-head);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.id-role {
+    display: inline-block;
+    background: var(--primary-dim);
+    color: var(--primary);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+}
+
+.id-sessions-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    font-weight: 700;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed var(--c-border-l);
+    padding-bottom: 6px;
+}
+
+.id-sessions-list {
+    list-style: none;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+}
+
+.id-session-item {
+    font-size: 0.8rem;
+    color: var(--text-2);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.3;
+}
+
+.id-session-item i {
+    color: var(--success);
+    margin-top: 2px;
+    font-size: 0.7rem;
+}
+
+.id-footer {
+    background: var(--c-elevated);
+    padding: 20px;
+    text-align: center;
+    border-top: 1px dashed var(--c-border-l);
+}
+
+/* Fake barcode styling */
+.barcode {
+    font-family: 'Libre Barcode 39', 'Courier New', monospace; /* Fallback to monospace if font fails */
+    font-size: 2.5rem;
+    color: var(--text-1);
+    line-height: 0.8;
+    letter-spacing: 2px;
+    opacity: 0.7;
+}
+.barcode-text {
+    font-size: 0.65rem;
+    color: var(--text-3);
+    letter-spacing: 0.2em;
+    margin-top: 6px;
+    font-family: monospace;
+}
+
+/* --- PRINT RULES (CRITICAL) --- */
+@media print {
+    /* Hide everything except the badge */
+    body * {
+        visibility: hidden;
+    }
+    
+    /* Reset background for printing */
+    body, html {
+        background: #ffffff !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .id-card, .id-card * {
+        visibility: visible;
+    }
+
+    /* Center the badge on the printed paper */
+    .id-card {
+        position: absolute;
+        left: 50%;
+        top: 50px;
+        transform: translateX(-50%);
+        box-shadow: none !important; /* Save printer ink */
+        border: 2px solid #000 !important;
+    }
+
+    /* Ensure background colors print correctly in Chrome/Safari */
+    .id-header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .id-role {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border: 1px solid var(--primary);
+    }
+}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="page-header anim-fade">
+  <div>
+    <h1 class="page-title">Digital Access Badge</h1>
+    <p class="page-sub">Present this badge at the venue, or print it to wear on a lanyard.</p>
+  </div>
+</div>
+
+<div class="badge-container">
+    
+    <div class="action-buttons anim-fade" style="animation-delay: 0.1s;">
+        <button onclick="window.print()" class="btn btn-primary" style="padding: 12px 24px; font-size: 1rem; box-shadow: 0 4px 15px var(--primary-glow);">
+            <i class="fas fa-print"></i> Print Badge
+        </button>
+        <a href="{% url 'participant_dashboard' %}" class="btn btn-ghost" style="padding: 12px 24px;">Back to Dashboard</a>
     </div>
-</body>
-</html>
+
+    <div class="id-card anim-rise" style="animation-delay: 0.2s;">
+        <div class="lanyard-hole"></div>
+        
+        <div class="id-header">
+            <div class="conf-title">ConfSys</div>
+            <div class="conf-year">2026 CONFERENCE</div>
+        </div>
+        
+        <div class="id-body">
+            <div class="id-avatar">{{ request.user.username|first|upper }}</div>
+            
+            <div class="id-name">{{ request.user.username }}</div>
+            <div class="id-role">Participant</div>
+
+            <div class="id-sessions-title">Access Granted for:</div>
+            
+            {% if registrations %}
+                <ul class="id-sessions-list">
+                    {% for reg in registrations %}
+                    <li class="id-session-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>{{ reg.session.title }}</strong><br>
+                            <span style="font-size: 0.75rem; color: var(--text-3);">{{ reg.session.date }} at {{ reg.session.start_time }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div style="font-size: 0.85rem; color: var(--text-3); font-style: italic; padding: 10px 0;">
+                    No session registrations found.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="id-footer">
+            <div class="barcode">*{{ request.user.username|upper }}*</div>
+            <div class="barcode-text">ID-{{ request.user.id|stringformat:"05d"|default:"00142" }}</div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

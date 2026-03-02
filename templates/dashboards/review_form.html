@@ -1,38 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Review Paper</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        h1 { color: #333; }
-        form { max-width: 600px; }
-        label { display: block; margin: 15px 0 5px; font-weight: bold; }
-        select, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
-        textarea { height: 150px; }
-        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <h1>Review: {{ paper.title }}</h1>
-    <p><strong>Author:</strong> {{ paper.author.username }}</p>
-    <p><strong>Abstract:</strong> {{ paper.abstract|linebreaks }}</p>
+{% extends 'base.html' %}
 
-    <form method="POST">
+{% block title %}Review Paper | ConfSys{% endblock %}
+
+{% block extra_css %}
+<style>
+.submit-container { max-width: 800px; margin: 0 auto; }
+.submit-card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r); box-shadow: var(--shadow-md); overflow: hidden; }
+.submit-header { padding: 30px 40px; border-bottom: 1px solid var(--c-border); background: var(--c-elevated); display: flex; align-items: center; gap: 16px; }
+.submit-header-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-dim); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+.submit-header-info h2 { font-family: var(--f-head); font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+.submit-header-info p { font-size: 0.85rem; color: var(--text-2); }
+.submit-body { padding: 40px; }
+.paper-context { background: var(--c-elevated); border: 1px solid var(--c-border-l); border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+.paper-context h4 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); margin-bottom: 8px; }
+.paper-context p { font-size: 0.95rem; color: var(--text-1); line-height: 1.6; margin-bottom: 16px; }
+.form-group { margin-bottom: 24px; }
+.form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-1); margin-bottom: 8px; }
+.form-control { width: 100%; padding: 12px 16px; font-size: 0.95rem; font-family: var(--f-body); color: var(--text-1); background: var(--c-surface); border: 1px solid var(--c-border-l); border-radius: 10px; transition: all 0.2s; outline: none; box-shadow: var(--shadow-sm); }
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-dim); }
+.form-actions { display: flex; gap: 16px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--c-border); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header anim-fade">
+  <div>
+    <h1 class="page-title">Evaluate Submission</h1>
+    <p class="page-sub">{{ paper.title }} — Submitted by {{ paper.author.username }}</p>
+  </div>
+</div>
+
+<div class="submit-container">
+  <div class="submit-card anim-rise">
+    
+    <div class="submit-header">
+      <div class="submit-header-icon"><i class="fas fa-clipboard-check"></i></div>
+      <div class="submit-header-info">
+        <h2>Review Form</h2>
+        <p>Please provide constructive feedback and your final decision.</p>
+      </div>
+    </div>
+
+    <div class="submit-body">
+      <div class="paper-context">
+        <h4>Abstract</h4>
+        <p>{{ paper.abstract }}</p>
+        <a href="{{ paper.file.url }}" target="_blank" class="btn btn-primary btn-sm" style="box-shadow: none;">
+          <i class="fas fa-file-pdf"></i> Download Full Manuscript
+        </a>
+      </div>
+
+      <form method="post">
         {% csrf_token %}
+        <div class="form-group">
+          <label for="id_decision" class="form-label">Final Decision <span style="color:#ef4444;">*</span></label>
+          <select id="id_decision" name="decision" class="form-control" required>
+            <option value="" disabled selected>Select your decision...</option>
+            <option value="accepted">✅ Accept Submission</option>
+            <option value="rejected">❌ Reject Submission</option>
+          </select>
+        </div>
 
-        <label>Decision</label>
-        <select name="decision" required>
-            <option value="accepted">Accept</option>
-            <option value="rejected">Reject</option>
-        </select><br><br>
+        <div class="form-group">
+          <label for="id_comments" class="form-label">Reviewer Comments <span style="color:#ef4444;">*</span></label>
+          <textarea id="id_comments" name="review_comments" class="form-control" rows="6" required placeholder="Provide detailed feedback, methodological critiques, and suggestions for the author..."></textarea>
+        </div>
 
-        <label>Comments</label>
-        <textarea name="review_comments" placeholder="Your detailed review..."></textarea><br><br>
-
-        <button type="submit">Submit Review</button>
-    </form>
-
-    <p><a href="{% url 'reviewer_dashboard' %}">Back to Dashboard</a></p>
-</body>
-</html>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Evaluation</button>
+          <a href="{% url 'reviewer_dashboard' %}" class="btn btn-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

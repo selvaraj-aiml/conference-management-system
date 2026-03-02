@@ -1,28 +1,173 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Register for Session</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        h1 { color: #333; }
-        form { max-width: 600px; }
-        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #218838; }
-        .back { margin-top: 20px; display: block; color: #007bff; text-decoration: none; }
-    </style>
-</head>
-<body>
-    <h1>Register for {{ session.title }}</h1>
-    <p>Date: {{ session.date }}</p>
-    <p>Time: {{ session.start_time }} - {{ session.end_time }}</p>
-    <p>Hall: {{ session.hall|default:"-" }}</p>
+{% extends 'base.html' %}
 
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit">Confirm Registration</button>
-    </form>
+{% block title %}Confirm Registration | ConfSys{% endblock %}
 
-    <a href="{% url 'participant_dashboard' %}" class="back">Back to Dashboard</a>
-</body>
-</html>
+{% block extra_css %}
+<style>
+/* 1. HIDE THE REDUNDANT TOPBAR FOR THIS FOCUS PAGE */
+.topbar { display: none !important; }
+
+/* 2. IMMERSIVE FULL-SCREEN CENTERING */
+.focus-wrapper {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+/* 3. PREMIUM CARD DESIGN */
+.premium-card {
+    background: var(--c-surface);
+    width: 100%;
+    max-width: 580px;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.15), 0 0 0 1px var(--c-border);
+    overflow: hidden;
+    position: relative;
+}
+
+/* 4. CARD HERO HEADER */
+.card-hero {
+    background: linear-gradient(135deg, var(--primary), #3b82f6);
+    padding: 40px 30px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+.card-hero::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    animation: rotateGlow 10s linear infinite;
+}
+@keyframes rotateGlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+    padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.3);
+}
+
+.hero-title {
+    font-family: var(--f-head); font-size: 1.75rem; font-weight: 700;
+    line-height: 1.2; margin-bottom: 0; position: relative; z-index: 2;
+}
+
+/* 5. DATA GRID */
+.card-body { padding: 40px 30px; }
+
+.detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin-bottom: 30px;
+}
+.d-box {
+    background: var(--c-bg); border: 1px solid var(--c-border-l);
+    border-radius: 16px; padding: 20px; transition: all 0.2s;
+}
+.d-box:hover { border-color: var(--primary); background: var(--primary-dim); transform: translateY(-2px); }
+.d-icon { color: var(--primary); font-size: 1.2rem; margin-bottom: 12px; }
+.d-label { font-size: 0.75rem; color: var(--text-3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 4px; }
+.d-value { font-size: 0.95rem; font-weight: 600; color: var(--text-1); }
+
+/* 6. INFO BANNER */
+.info-box {
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;
+    padding: 16px; display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 30px;
+}
+.info-box i { color: #166534; font-size: 1.2rem; margin-top: 2px; }
+.info-box p { color: #15803d; font-size: 0.85rem; font-weight: 500; line-height: 1.4; margin: 0; }
+
+/* 7. ACTIONS */
+.action-area { display: flex; flex-direction: column; gap: 12px; }
+
+.btn-confirm {
+    width: 100%; padding: 16px; border-radius: 12px; border: none;
+    background: var(--primary); color: white; font-family: var(--f-body);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 10px 20px var(--primary-dim); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-confirm:hover { background: #4338ca; transform: translateY(-2px); box-shadow: 0 15px 25px rgba(79, 70, 229, 0.3); }
+.btn-confirm i { transition: transform 0.3s; }
+.btn-confirm:hover i { transform: translateX(4px); }
+
+.btn-cancel {
+    width: 100%; padding: 14px; text-align: center; color: var(--text-2);
+    font-size: 0.9rem; font-weight: 600; text-decoration: none; border-radius: 12px;
+    transition: all 0.2s; background: transparent;
+}
+.btn-cancel:hover { background: var(--c-hover); color: var(--text-1); }
+
+/* STAGGERED ENTRANCE ANIMATIONS */
+.stagger-1 { animation: fadeUp 0.6s 0.1s both; }
+.stagger-2 { animation: fadeUp 0.6s 0.2s both; }
+.stagger-3 { animation: fadeUp 0.6s 0.3s both; }
+.stagger-4 { animation: fadeUp 0.6s 0.4s both; }
+
+@media(max-width: 600px) {
+    .detail-grid { grid-template-columns: 1fr; gap: 12px; }
+    .focus-wrapper { padding: 10px; align-items: flex-start; }
+    .card-hero { padding: 30px 20px; }
+    .card-body { padding: 30px 20px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="focus-wrapper">
+    <div class="premium-card anim-rise">
+        
+        <div class="card-hero">
+            <div class="hero-badge stagger-1"><i class="fas fa-ticket-alt"></i> Session Registration</div>
+            <h1 class="hero-title stagger-2">{{ session.title }}</h1>
+        </div>
+
+        <div class="card-body">
+            
+            <div class="detail-grid stagger-3">
+                <div class="d-box">
+                    <div class="d-icon"><i class="fas fa-calendar-day"></i></div>
+                    <div class="d-label">Date Scheduled</div>
+                    <div class="d-value">{{ session.date }}</div>
+                </div>
+                <div class="d-box">
+                    <div class="d-icon"><i class="fas fa-clock"></i></div>
+                    <div class="d-label">Time Slot</div>
+                    <div class="d-value">{{ session.start_time }} - {{ session.end_time }}</div>
+                </div>
+                <div class="d-box">
+                    <div class="d-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="d-label">Venue / Hall</div>
+                    <div class="d-value">{{ session.hall|default:"TBA" }}</div>
+                </div>
+                <div class="d-box">
+                    <div class="d-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="d-label">Keynote / Speaker</div>
+                    <div class="d-value">{{ session.speaker|default:"Multiple Presentations" }}</div>
+                </div>
+            </div>
+
+            <div class="info-box stagger-4">
+                <i class="fas fa-shield-check"></i>
+                <p>Confirming will instantly secure your seat. This session will be synced to your digital ID badge.</p>
+            </div>
+
+            <form method="POST" class="action-area stagger-4" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn-confirm">
+                    Confirm Registration <i class="fas fa-arrow-right"></i>
+                </button>
+                <a href="{% url 'participant_dashboard' %}" class="btn-cancel">
+                    Go Back
+                </a>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,33 +1,98 @@
-<h2>Add New Session</h2>
+{% extends 'base.html' %}
 
-<form method="post">
-    {% csrf_token %}
+{% block title %}Create Session | ConfSys{% endblock %}
 
-    <label>Title</label><br>
-    <input type="text" name="title" required><br><br>
+{% block extra_css %}
+<style>
+.submit-container { max-width: 800px; margin: 0 auto; }
+.submit-card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r); box-shadow: var(--shadow-md); overflow: hidden; }
+.submit-header { padding: 30px 40px; border-bottom: 1px solid var(--c-border); background: var(--c-elevated); display: flex; align-items: center; gap: 16px; }
+.submit-header-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--success-dim); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+.submit-header-info h2 { font-family: var(--f-head); font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+.submit-header-info p { font-size: 0.85rem; color: var(--text-2); }
+.submit-body { padding: 40px; }
+.form-group { margin-bottom: 24px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } /* Replaces Bootstrap Row/Col */
+.form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-1); margin-bottom: 8px; }
+.form-control { width: 100%; padding: 12px 16px; font-size: 0.95rem; font-family: var(--f-body); color: var(--text-1); background: var(--c-surface); border: 1px solid var(--c-border-l); border-radius: 10px; transition: all 0.2s; outline: none; box-shadow: var(--shadow-sm); }
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-dim); }
+.form-actions { display: flex; gap: 16px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--c-border); }
+@media(max-width: 600px) { .form-row { grid-template-columns: 1fr; gap: 0; } }
+</style>
+{% endblock %}
 
-    <label>Session Type</label><br>
-    <select name="session_type" required>
-        <option value="KEYNOTE">Keynote</option>
-        <option value="PRESENTATION">Paper Presentation</option>
-        <option value="WORKSHOP">Workshop</option>
-        <option value="PANEL">Panel Discussion</option>
-    </select><br><br>
+{% block content %}
+<div class="page-header anim-fade">
+  <div>
+    <h1 class="page-title">Create New Session</h1>
+    <p class="page-sub">Define a new block for the conference schedule.</p>
+  </div>
+</div>
 
-    <label>Date</label><br>
-    <input type="date" name="date" required><br><br>
+<div class="submit-container">
+  <div class="submit-card anim-rise">
+    
+    <div class="submit-header">
+      <div class="submit-header-icon"><i class="fas fa-calendar-check"></i></div>
+      <div class="submit-header-info">
+        <h2>Session Details</h2>
+        <p>Set the time, location, and type of the event.</p>
+      </div>
+    </div>
 
-    <label>Start Time</label><br>
-    <input type="time" name="start_time" required><br><br>
+    <div class="submit-body">
+      <form method="post">
+        {% csrf_token %}
 
-    <label>End Time</label><br>
-    <input type="time" name="end_time" required><br><br>
+        <div class="form-group">
+          <label for="id_title" class="form-label">Session Title <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="id_title" name="title" class="form-control" placeholder="e.g. Morning AI Keynote" required>
+        </div>
 
-    <label>Hall</label><br>
-    <input type="text" name="hall"><br><br>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="id_type" class="form-label">Session Type <span style="color:#ef4444;">*</span></label>
+            <select id="id_type" name="session_type" class="form-control" required>
+              <option value="" disabled selected>Select type...</option>
+              <option value="KEYNOTE">Keynote</option>
+              <option value="PRESENTATION">Paper Presentation</option>
+              <option value="WORKSHOP">Workshop</option>
+              <option value="PANEL">Panel Discussion</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="id_date" class="form-label">Date <span style="color:#ef4444;">*</span></label>
+            <input type="date" id="id_date" name="date" class="form-control" required>
+          </div>
+        </div>
 
-    <label>Speaker (optional)</label><br>
-    <input type="text" name="speaker"><br><br>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="id_start" class="form-label">Start Time <span style="color:#ef4444;">*</span></label>
+            <input type="time" id="id_start" name="start_time" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="id_end" class="form-label">End Time <span style="color:#ef4444;">*</span></label>
+            <input type="time" id="id_end" name="end_time" class="form-control" required>
+          </div>
+        </div>
 
-    <button type="submit">Create Session</button>
-</form>
+        <div class="form-group">
+          <label for="id_hall" class="form-label">Hall / Location</label>
+          <input type="text" id="id_hall" name="hall" class="form-control" placeholder="e.g. Main Auditorium">
+        </div>
+
+        <div class="form-group">
+          <label for="id_speaker" class="form-label">Lead Speaker (Optional)</label>
+          <input type="text" id="id_speaker" name="speaker" class="form-control" placeholder="Name of the main speaker">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" style="background:var(--success); box-shadow:0 4px 12px var(--success-dim);"><i class="fas fa-save"></i> Create Session</button>
+          <a href="{% url 'admin_session_list' %}" class="btn btn-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

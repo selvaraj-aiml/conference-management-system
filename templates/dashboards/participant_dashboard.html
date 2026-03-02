@@ -1,85 +1,275 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Participant Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        h1 { color: #333; }
-        .btn { padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; }
-        .btn:hover { background: #0056b3; }
-        .btn-register { background: #28a745; font-size: 14px; padding: 8px 12px; }
-        .btn-register:hover { background: #218838; }
-        .logout-btn { padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; position: absolute; top: 20px; right: 20px; }
-        .logout-btn:hover { background: #c82333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #007bff; color: white; }
-        tr:hover { background: #f1f1f1; }
-        .presentation-list { margin-left: 20px; }
-    </style>
-</head>
-<body>
-    <form method="post" action="{% url 'logout' %}" style="position: absolute; top: 20px; right: 20px;">
-        {% csrf_token %}
-        <button type="submit" class="logout-btn">Logout</button>
-    </form>
+{% extends 'base.html' %}
+{% block title %}Participant Dashboard | ConfSys{% endblock %}
 
-    <h1>Participant Dashboard</h1>
+{% block extra_css %}
+<style>
+/* STATS GRID - Professional Edition */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px;}
 
-    <p>Welcome, {{ request.user.username }}! View the conference schedule below.</p>
+.stat-card{
+  position:relative;overflow:hidden;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:var(--r);padding:24px;cursor:default;
+  box-shadow:var(--shadow-sm);
+  animation:riseUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.stat-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--c-border-l);}
 
-    <a href="{% url 'generate_badge' %}" class="btn">Generate Badge</a>
+/* Subtle light-mode shimmer */
+.stat-card::after{content:'';position:absolute;top:-50%;left:-60%;width:35%;height:200%;background:linear-gradient(105deg,transparent,rgba(0,0,0,0.015),transparent);transform:skewX(-15deg);transition:left 0.55s ease;pointer-events:none;}
+.stat-card:hover::after{left:130%;}
 
-    <h2>Conference Schedule</h2>
+.stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.stat-pill{font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;text-transform:uppercase;letter-spacing:0.05em;}
+.stat-num{font-family:var(--f-head);font-size:2.5rem;font-weight:700;letter-spacing:-0.03em;line-height:1;margin-bottom:6px;color:var(--text-1);}
+.stat-lbl{font-size:0.75rem;color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;}
 
-    {% if sessions %}
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Hall</th>
-                <th>Speaker</th>
-                <th>Presentations</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for session in sessions %}
-            <tr>
-                <td>{{ session.title }}</td>
-                <td>{{ session.session_type|title }}</td>
-                <td>{{ session.date }}</td>
-                <td>{{ session.start_time }} - {{ session.end_time }}</td>
-                <td>{{ session.hall|default:"-" }}</td>
-                <td>{{ session.speaker|default:"-" }}</td>
-                <td>
-                    {% if session.presentations.all %}
-                    <ul class="presentation-list">
-                        {% for pres in session.presentations.all|dictsort:"presentation_order" %}
-                        <li>{{ pres.presentation_order }}. {{ pres.paper.title }} (Author: {{ pres.paper.author.username }})</li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    No presentations assigned yet.
-                    {% endif %}
-                </td>
-                <td>
-                    {% if session.id in registrations %}
-                        Registered
-                    {% else %}
-                        <a href="{% url 'register_for_session' session.id %}" class="btn-register">Register</a>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+/* Professional Color Variants */
+.sv-primary .stat-icon{background:var(--primary-dim);color:var(--primary);}
+.sv-primary .stat-pill{background:var(--primary-dim);color:var(--primary);}
+
+.sv-success .stat-icon{background:var(--success-dim);color:var(--success);}
+.sv-success .stat-pill{background:var(--success-dim);color:var(--success);}
+
+.sv-info .stat-icon{background:var(--info-dim);color:var(--info);}
+.sv-info .stat-pill{background:var(--info-dim);color:var(--info);}
+
+.sv-warning .stat-icon{background:var(--warning-dim);color:var(--warning);}
+.sv-warning .stat-pill{background:var(--warning-dim);color:var(--warning);}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;animation:fadeUp 0.6s 0.3s both;}
+.sec-title{font-family:var(--f-head);font-size:1.2rem;font-weight:700;color:var(--text-1);letter-spacing:-0.01em;display:flex;align-items:center;gap:12px;}
+.count-chip{font-size:0.75rem;font-weight:600;padding:4px 12px;border-radius:20px;background:var(--primary-dim);color:var(--primary);font-family:var(--f-body);}
+
+/* TABLE ITEMS */
+.t-wrap{animation:fadeUp 0.6s 0.35s both;}
+.session-cell{display:flex;flex-direction:column;gap:6px;max-width:260px;}
+.session-ttl{font-weight:700;color:var(--text-1);font-size:0.95rem;white-space:normal;line-height:1.3;}
+.session-type{display:inline-flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:3px 8px;border-radius:6px;background:var(--c-hover);color:var(--text-2);width:fit-content;}
+
+/* Sub-list for presentations */
+.pres-list{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;max-width:320px;}
+.pres-item{display:flex;align-items:flex-start;gap:8px;font-size:0.8rem;color:var(--text-2);background:var(--c-hover);padding:8px 12px;border-radius:8px;border:1px solid var(--c-border);line-height:1.4;white-space:normal;}
+.pres-item i{color:var(--primary);margin-top:2px;font-size:0.85rem;flex-shrink:0;}
+.pres-auth{font-weight:600;color:var(--text-1);display:block;margin-top:2px;font-size:0.75rem;}
+
+/* Details formatting */
+.detail-row{display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-2);margin-bottom:4px;}
+.detail-row i{width:16px;text-align:center;color:var(--text-3);}
+
+/* Table Badges & Elements */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:0.7rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;}
+.bd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.b-success{background:#dcfce7;color:#166534;} .b-success .bd{background:#166534;}
+
+.act-link{display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:600;color:var(--primary);padding:8px 14px;border-radius:8px;text-decoration:none;background:var(--primary-dim);transition:all 0.2s;white-space:nowrap;}
+.act-link:hover{background:rgba(79,70,229,0.12);transform:translateY(-1px);}
+
+/* EMPTY STATE */
+.empty{padding:80px 30px;text-align:center;background:var(--c-surface);border:1px dashed var(--c-border-l);border-radius:var(--r);box-shadow:var(--shadow-sm);}
+.empty-ico{width:64px;height:64px;margin:0 auto 20px;border-radius:16px;background:var(--c-hover);color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:1.75rem;}
+.empty h3{font-family:var(--f-head);font-size:1.2rem;font-weight:700;color:var(--text-1);margin-bottom:8px;}
+.empty p{color:var(--text-2);font-size:0.9rem;margin-bottom:24px;}
+
+@media(max-width:1200px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.stats-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header anim-fade">
+  <div>
+    <h1 class="page-title">Participant Dashboard</h1>
+    <p class="page-sub">Explore the schedule, register for sessions, and access your badge.</p>
+  </div>
+  <div style="display:flex;gap:12px;">
+    <a href="{% url 'generate_badge' %}" class="btn btn-primary" style="background:var(--text-1); box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+      <i class="fas fa-id-badge"></i> Generate ID Badge
+    </a>
+  </div>
+</div>
+
+<div class="stats-grid">
+
+  <div class="stat-card sv-primary" style="animation-delay:.05s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+      <div class="stat-pill"><i class="fas fa-list"></i> Schedule</div>
+    </div>
+    <div class="stat-num stat-count" id="count-total">0</div>
+    <div class="stat-lbl">Total Sessions</div>
+  </div>
+
+  <div class="stat-card sv-success" style="animation-delay:.12s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+      <div class="stat-pill"><i class="fas fa-check"></i> Enrolled</div>
+    </div>
+    <div class="stat-num stat-count" id="count-registered">0</div>
+    <div class="stat-lbl">My Registrations</div>
+  </div>
+
+  <div class="stat-card sv-info" style="animation-delay:.19s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+      <div class="stat-pill"><i class="fas fa-plus"></i> Join</div>
+    </div>
+    <div class="stat-num stat-count" id="count-available">0</div>
+    <div class="stat-lbl">Available to Join</div>
+  </div>
+
+  <div class="stat-card sv-warning" style="animation-delay:.26s">
+    <div class="stat-top">
+      <div class="stat-icon"><i class="fas fa-microphone-alt"></i></div>
+      <div class="stat-pill"><i class="fas fa-file-alt"></i> Content</div>
+    </div>
+    <div class="stat-num stat-count" id="count-papers">0</div>
+    <div class="stat-lbl">Presentations Scheduled</div>
+  </div>
+
+</div>
+
+<div class="sec-head">
+  <div class="sec-title">
+    Conference Schedule
+    {% if sessions %}<span class="count-chip">{{ sessions|length }} Session{% if sessions|length != 1 %}s{% endif %}</span>{% endif %}
+  </div>
+</div>
+
+{% if sessions %}
+<div class="t-wrap">
+  <div class="t-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Session Info</th>
+          <th>Date & Time</th>
+          <th>Location & Speaker</th>
+          <th>Presentations</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for session in sessions %}
+        <tr class="session-row" data-registered="{% if session.id in registrations %}true{% else %}false{% endif %}">
+          
+          <td>
+            <div class="session-cell">
+              <div class="session-ttl">{{ session.title }}</div>
+              <div class="session-type"><i class="fas fa-tag"></i> {{ session.session_type|title }}</div>
+            </div>
+          </td>
+
+          <td>
+            <div class="detail-row"><i class="fas fa-calendar-day"></i> <strong style="color:var(--text-1);">{{ session.date }}</strong></div>
+            <div class="detail-row"><i class="fas fa-clock"></i> {{ session.start_time }} - {{ session.end_time }}</div>
+          </td>
+
+          <td>
+            <div class="detail-row"><i class="fas fa-map-marker-alt" style="color:#ef4444;"></i> <strong style="color:var(--text-1);">{{ session.hall|default:"TBA" }}</strong></div>
+            <div class="detail-row"><i class="fas fa-user-tie" style="color:var(--info);"></i> {{ session.speaker|default:"Multiple Authors" }}</div>
+          </td>
+
+          <td>
+            {% if session.presentations.all %}
+            <ul class="pres-list">
+              {% for pres in session.presentations.all|dictsort:"presentation_order" %}
+              <li class="pres-item">
+                <i class="fas fa-file-powerpoint"></i>
+                <div>
+                  {{ pres.presentation_order }}. {{ pres.paper.title }}
+                  <span class="pres-auth"><i class="fas fa-user-edit" style="color:var(--text-3); font-size:0.65rem;"></i> {{ pres.paper.author.username }}</span>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+              <span style="font-size:0.85rem; color:var(--text-3); font-style:italic;">No presentations assigned</span>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if session.id in registrations %}
+              <span class="badge b-success"><span class="bd"></span>Registered</span>
+            {% else %}
+              <a href="{% url 'register_for_session' session.id %}" class="act-link">
+                <i class="fas fa-sign-in-alt"></i> Register Now
+              </a>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-    {% else %}
-    <p>No sessions scheduled yet.</p>
-    {% endif %}
-</body>
-</html>
+  </div>
+</div>
+
+{% else %}
+<div class="empty anim-fade" style="animation-delay:.35s;">
+  <div class="empty-ico"><i class="fas fa-calendar-times"></i></div>
+  <h3>No sessions available yet</h3>
+  <p>The conference committee is still finalizing the schedule. Please check back later!</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. SAFELY CALCULATE STATS FROM THE HTML TABLE (NO BACKEND REQUIRED)
+  const rows = document.querySelectorAll('.session-row');
+  const presentationItems = document.querySelectorAll('.pres-item');
+  
+  let totalSessions = rows.length;
+  let registered = 0;
+  let totalPapers = presentationItems.length;
+
+  rows.forEach(row => {
+    if (row.getAttribute('data-registered') === 'true') {
+      registered++;
+    }
+  });
+  
+  let available = totalSessions - registered;
+
+  // Inject the calculated numbers into the DOM before the animation starts
+  document.getElementById('count-total').textContent = totalSessions;
+  document.getElementById('count-registered').textContent = registered;
+  document.getElementById('count-available').textContent = available;
+  document.getElementById('count-papers').textContent = totalPapers;
+
+  // 2. COUNT-UP ANIMATION ENGINE
+  function easeOut(t){return 1-Math.pow(1-t,3);}
+  
+  document.querySelectorAll('.stat-count').forEach(el => {
+    const raw = el.textContent.trim();
+    const target = parseInt(raw, 10);
+    
+    if (isNaN(target) || target === 0) {
+        el.textContent = '0'; 
+        return; 
+    }
+    
+    const card = el.closest('.stat-card');
+    const delay = (parseFloat(card.style.animationDelay || '0') * 1000) + 400;
+    el.textContent = '0';
+    
+    setTimeout(() => {
+      const start = performance.now();
+      const dur = 1500;
+      (function step(now) {
+        const p = Math.min((now - start) / dur, 1);
+        el.textContent = Math.round(easeOut(p) * target);
+        if (p < 1) requestAnimationFrame(step);
+      })(performance.now());
+    }, delay);
+  });
+});
+</script>
+{% endblock %}

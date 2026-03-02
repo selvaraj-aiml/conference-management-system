@@ -1,37 +1,260 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Submit Your Paper</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
-        h1 { color: #333; }
-        form { max-width: 600px; }
-        label { display: block; margin: 15px 0 5px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
-        textarea { height: 120px; }
-        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #218838; }
-    </style>
-</head>
-<body>
-    <h1>Submit Your Paper</h1>
+{% extends 'base.html' %}
 
-    <form method="POST" enctype="multipart/form-data">
+{% block title %}Submit New Paper | ConfSys{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- CUSTOM FORM STYLING --- */
+.submit-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.submit-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.submit-header {
+    padding: 30px 40px;
+    border-bottom: 1px solid var(--c-border);
+    background: var(--c-elevated);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.submit-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--primary-dim);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.submit-header-info h2 {
+    font-family: var(--f-head);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 4px;
+}
+
+.submit-header-info p {
+    font-size: 0.85rem;
+    color: var(--text-2);
+}
+
+.submit-body {
+    padding: 40px;
+}
+
+.form-group {
+    margin-bottom: 28px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 8px;
+}
+
+.form-label span.required {
+    color: #ef4444;
+    margin-left: 4px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    font-family: var(--f-body);
+    color: var(--text-1);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-l);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    outline: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-dim);
+}
+
+.form-control::placeholder {
+    color: var(--text-3);
+}
+
+/* --- CUSTOM FILE UPLOADER --- */
+.file-upload-zone {
+    position: relative;
+    border: 2px dashed var(--c-border-l);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    background: var(--c-elevated);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.file-upload-zone:hover {
+    border-color: var(--primary);
+    background: var(--primary-dim);
+}
+
+.file-upload-zone i {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 16px;
+    transition: transform 0.2s;
+}
+
+.file-upload-zone:hover i {
+    transform: translateY(-4px);
+}
+
+.file-upload-zone .file-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 6px;
+}
+
+.file-upload-zone .file-hint {
+    font-size: 0.85rem;
+    color: var(--text-3);
+}
+
+/* The actual input is invisible but covers the whole box */
+.file-input-hidden {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* --- FORM ACTIONS --- */
+.form-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--c-border);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header anim-fade">
+  <div>
+    <h1 class="page-title">Submit New Paper</h1>
+    <p class="page-sub">Fill in the details below to upload your research paper for review.</p>
+  </div>
+</div>
+
+<div class="submit-container">
+  <div class="submit-card anim-rise" style="animation-delay: 0.1s;">
+    
+    <div class="submit-header">
+      <div class="submit-header-icon">
+        <i class="fas fa-file-signature"></i>
+      </div>
+      <div class="submit-header-info">
+        <h2>Research Paper Details</h2>
+        <p>Ensure all information is accurate before submitting.</p>
+      </div>
+    </div>
+
+    <div class="submit-body">
+      <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <label>Paper Title</label>
-        <input type="text" name="title" required><br><br>
+        <div class="form-group">
+          <label for="id_title" class="form-label">Paper Title <span class="required">*</span></label>
+          <input type="text" id="id_title" name="title" class="form-control" required placeholder="e.g., Deep Learning Approaches in Healthcare Diagnostics">
+        </div>
 
-        <label>Abstract</label>
-        <textarea name="abstract" required></textarea><br><br>
+        <div class="form-group">
+          <label for="id_abstract" class="form-label">Abstract <span class="required">*</span></label>
+          <textarea id="id_abstract" name="abstract" class="form-control" rows="6" required placeholder="Provide a concise summary of your research methodology, findings, and conclusion..."></textarea>
+        </div>
 
-        <label>Upload PDF</label>
-        <input type="file" name="file" accept=".pdf" required><br><br>
+        <div class="form-group">
+          <label class="form-label">Upload Manuscript (PDF) <span class="required">*</span></label>
+          
+          <div class="file-upload-zone" id="drop-zone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <div class="file-text" id="file-name-display">Click or drag PDF file here to upload</div>
+            <div class="file-hint">Maximum file size: 10MB. Accepted formats: .pdf only.</div>
+            
+            <input type="file" id="id_file" name="file" accept=".pdf" class="file-input-hidden" required>
+          </div>
+        </div>
 
-        <button type="submit">Submit Paper</button>
-    </form>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" style="padding: 12px 24px; font-size: 0.95rem;">
+            <i class="fas fa-paper-plane"></i> Submit Paper
+          </button>
+          <a href="{% url 'author_dashboard' %}" class="btn btn-ghost" style="padding: 12px 24px; font-size: 0.95rem;">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}
 
-    <p><a href="{% url 'author_dashboard' %}">Back to Dashboard</a></p>
-</body>
-</html>
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const fileInput = document.getElementById('id_file');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const dropZone = document.getElementById('drop-zone');
+
+    // Update text when a file is selected
+    fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files.length > 0) {
+            const fileName = this.files[0].name;
+            // Add a document icon and the file name
+            fileNameDisplay.innerHTML = `<i class="fas fa-file-pdf" style="color: #ef4444; font-size: 1.2rem; margin-right: 8px; margin-bottom: 0;"></i> <span style="color: var(--primary);">${fileName}</span>`;
+            dropZone.style.borderColor = "var(--primary)";
+            dropZone.style.background = "var(--primary-dim)";
+        } else {
+            fileNameDisplay.innerHTML = "Click or drag PDF file here to upload";
+            dropZone.style.borderColor = "var(--c-border-l)";
+            dropZone.style.background = "var(--c-elevated)";
+        }
+    });
+
+    // Simple visual feedback for drag events
+    fileInput.addEventListener('dragover', () => {
+        dropZone.style.borderColor = "var(--primary)";
+        dropZone.style.background = "var(--primary-dim)";
+    });
+
+    fileInput.addEventListener('dragleave', () => {
+        if (!fileInput.files || fileInput.files.length === 0) {
+            dropZone.style.borderColor = "var(--c-border-l)";
+            dropZone.style.background = "var(--c-elevated)";
+        }
+    });
+});
+</script>
+{% endblock %}
