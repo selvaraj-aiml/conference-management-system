@@ -206,7 +206,7 @@
 
           <td>
             {% if paper.status == 'submitted' or paper.status == 'assigned' %}
-            <form method="POST" action="." style="margin:0;">
+            <form method="POST" style="margin:0;">
               {% csrf_token %}
               <input type="hidden" name="paper_id" value="{{ paper.id }}">
               <div class="f-row">
@@ -218,7 +218,7 @@
                   </option>
                   {% endfor %}
                 </select>
-                <button type="submit" name="action" value="assign_reviewer"
+                <button type="submit" name="assign_reviewer"
                   class="btn-assign {% if paper.status == 'assigned' %}btn-ag{% else %}btn-ap{% endif %}">
                   {% if paper.status == 'assigned' %}Update{% else %}Assign{% endif %}
                 </button>
