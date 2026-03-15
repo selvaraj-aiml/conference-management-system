@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConfSys — Conference Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --primary:#4f46e5;
+  --primary-dim:rgba(79,70,229,0.08);
+  --primary-glow:rgba(79,70,229,0.25);
+  --info:#0ea5e9;
+  --success:#10b981;
+  --c-bg:#f4f7fe;
+  --c-surface:#ffffff;
+  --c-border:#e2e8f0;
+  --text-1:#0f172a;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+  --f-head:'Syne',sans-serif;
+  --f-body:'Plus Jakarta Sans',sans-serif;
+  --f-mono:'Space Grotesk',sans-serif;
+}
+html,body{height:100%;font-family:var(--f-body);background:var(--c-bg);color:var(--text-1);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+.bg-wrap{position:fixed;inset:0;z-index:0;overflow:hidden;}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(79,70,229,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(79,70,229,0.04) 1px,transparent 1px);background-size:48px 48px;}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+.orb-1{width:700px;height:700px;background:radial-gradient(circle,rgba(79,70,229,0.12),transparent 70%);top:-200px;left:-200px;animation:orbFloat 8s ease-in-out infinite;}
+.orb-2{width:600px;height:600px;background:radial-gradient(circle,rgba(14,165,233,0.1),transparent 70%);bottom:-150px;right:-150px;animation:orbFloat 10s ease-in-out infinite reverse;}
+.orb-3{width:400px;height:400px;background:radial-gradient(circle,rgba(16,185,129,0.07),transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);animation:orbFloat 12s ease-in-out infinite 2s;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0);}50%{transform:translate(30px,-30px);}}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(244,247,254,0.8);backdrop-filter:blur(16px);border-bottom:1px solid rgba(226,232,240,0.6);}
+.nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.nav-logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#3b82f6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;font-family:var(--f-head);box-shadow:0 4px 14px var(--primary-glow);}
+.nav-name{font-family:var(--f-head);font-size:1.1rem;font-weight:700;color:var(--text-1);}
+.nav-tag{font-size:0.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;display:block;}
+.nav-links{display:flex;align-items:center;gap:12px;}
+.nav-btn{padding:9px 20px;border-radius:10px;font-size:0.875rem;font-weight:600;font-family:var(--f-body);text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;}
+.nav-btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--c-border);}
+.nav-btn-ghost:hover{background:var(--c-surface);color:var(--text-1);border-color:#cbd5e1;}
+.nav-btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 12px var(--primary-glow);}
+.nav-btn-primary:hover{background:#4338ca;transform:translateY(-1px);box-shadow:0 6px 16px rgba(79,70,229,0.35);}
+
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 48px 80px;}
+.hero-inner{max-width:900px;width:100%;text-align:center;}
+
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:100px;font-size:0.8rem;font-weight:600;color:var(--text-2);margin-bottom:32px;box-shadow:0 2px 8px rgba(0,0,0,0.04);opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.hero-badge-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.6;transform:scale(1.3);}}
+
+.hero-title{font-family:var(--f-head);font-size:clamp(2.8rem,6vw,5rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;color:var(--text-1);margin-bottom:24px;opacity:0;animation:fadeUp 0.7s 0.35s both;}
+.hero-title .accent{background:linear-gradient(135deg,var(--primary),var(--info));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-title .block{display:block;}
+
+.hero-sub{font-size:1.15rem;color:var(--text-2);line-height:1.7;max-width:600px;margin:0 auto 48px;font-weight:500;opacity:0;animation:fadeUp 0.7s 0.5s both;}
+
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp 0.7s 0.65s both;}
+.btn-hero-primary{display:inline-flex;align-items:center;gap:10px;padding:15px 32px;background:var(--primary);color:#fff;border-radius:12px;font-size:1rem;font-weight:700;font-family:var(--f-body);text-decoration:none;box-shadow:0 6px 20px var(--primary-glow);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);border:none;cursor:pointer;}
+.btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(79,70,229,0.4);background:#4338ca;}
+.btn-hero-ghost{display:inline-flex;align-items:center;gap:10px;padding:15px 32px;background:var(--c-surface);color:var(--text-1);border-radius:12px;font-size:1rem;font-weight:700;font-family:var(--f-body);text-decoration:none;border:1px solid var(--c-border);box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.btn-hero-ghost:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.08);border-color:#cbd5e1;}
+
+.hero-stats{display:flex;align-items:center;justify-content:center;gap:48px;margin-top:64px;padding-top:48px;border-top:1px solid var(--c-border);opacity:0;animation:fadeUp 0.7s 0.85s both;}
+.hero-stat-num{font-family:var(--f-head);font-size:2rem;font-weight:800;color:var(--text-1);letter-spacing:-0.02em;}
+.hero-stat-lbl{font-size:0.8rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-top:4px;}
+
+.roles-section{position:relative;z-index:1;padding:80px 48px 100px;max-width:1200px;margin:0 auto;}
+.section-label{text-align:center;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;color:var(--primary);margin-bottom:16px;}
+.section-title{text-align:center;font-family:var(--f-head);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:800;color:var(--text-1);letter-spacing:-0.02em;margin-bottom:16px;}
+.section-sub{text-align:center;color:var(--text-2);font-size:1rem;max-width:520px;margin:0 auto 56px;line-height:1.7;}
+
+.roles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.role-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:20px;padding:32px 24px;text-align:center;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);cursor:default;position:relative;overflow:hidden;opacity:0;animation:fadeUp 0.6s both;}
+.role-card:nth-child(1){animation-delay:0.1s;}
+.role-card:nth-child(2){animation-delay:0.2s;}
+.role-card:nth-child(3){animation-delay:0.3s;}
+.role-card:nth-child(4){animation-delay:0.4s;}
+.role-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,0.08);border-color:#cbd5e1;}
+.role-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;opacity:0;transition:opacity 0.3s;}
+.role-card:hover::before{opacity:1;}
+.rc-admin::before{background:linear-gradient(90deg,var(--primary),#818cf8);}
+.rc-author::before{background:linear-gradient(90deg,var(--info),#38bdf8);}
+.rc-reviewer::before{background:linear-gradient(90deg,var(--success),#34d399);}
+.rc-participant::before{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+
+.role-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 20px;transition:transform 0.3s;}
+.role-card:hover .role-icon{transform:scale(1.1) rotate(-5deg);}
+.ri-admin{background:var(--primary-dim);color:var(--primary);}
+.ri-author{background:rgba(14,165,233,0.08);color:var(--info);}
+.ri-reviewer{background:rgba(16,185,129,0.08);color:var(--success);}
+.ri-participant{background:rgba(245,158,11,0.08);color:#f59e0b;}
+
+.role-name{font-family:var(--f-head);font-size:1.1rem;font-weight:700;color:var(--text-1);margin-bottom:10px;}
+.role-desc{font-size:0.85rem;color:var(--text-2);line-height:1.6;margin-bottom:24px;}
+.role-action{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:0.85rem;font-weight:700;font-family:var(--f-body);text-decoration:none;transition:all 0.2s;}
+.ra-primary{background:var(--primary-dim);color:var(--primary);}
+.ra-primary:hover{background:var(--primary);color:#fff;}
+.ra-info{background:rgba(14,165,233,0.08);color:var(--info);}
+.ra-info:hover{background:var(--info);color:#fff;}
+.ra-success{background:rgba(16,185,129,0.08);color:var(--success);}
+.ra-success:hover{background:var(--success);color:#fff;}
+.ra-warning{background:rgba(245,158,11,0.08);color:#f59e0b;}
+.ra-warning:hover{background:#f59e0b;color:#fff;}
+
+.flow-section{position:relative;z-index:1;padding:80px 48px;background:var(--c-surface);border-top:1px solid var(--c-border);border-bottom:1px solid var(--c-border);}
+.flow-inner{max-width:1000px;margin:0 auto;}
+.flow-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:56px;position:relative;}
+.flow-steps::before{content:'';position:absolute;top:32px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,var(--primary),var(--info),var(--success));opacity:0.3;z-index:0;}
+.flow-step{text-align:center;position:relative;z-index:1;padding:0 12px;}
+.flow-num{width:64px;height:64px;border-radius:50%;background:var(--c-surface);border:2px solid var(--c-border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:var(--f-head);font-size:1.1rem;font-weight:800;color:var(--text-1);transition:all 0.3s;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+.flow-step:hover .flow-num{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.1);box-shadow:0 6px 16px var(--primary-glow);}
+.flow-step-title{font-size:0.85rem;font-weight:700;color:var(--text-1);margin-bottom:6px;}
+.flow-step-desc{font-size:0.75rem;color:var(--text-3);line-height:1.5;}
+
+footer{position:relative;z-index:1;padding:40px 48px;text-align:center;border-top:1px solid var(--c-border);}
+.footer-brand{font-family:var(--f-head);font-size:1.1rem;font-weight:700;color:var(--text-1);margin-bottom:8px;}
+.footer-sub{font-size:0.85rem;color:var(--text-3);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:900px){
+  .roles-grid{grid-template-columns:repeat(2,1fr);}
+  .flow-steps{grid-template-columns:1fr;gap:24px;}
+  .flow-steps::before{display:none;}
+  .hero-stats{gap:32px;}
+  nav{padding:16px 24px;}
+  .hero{padding:100px 24px 60px;}
+  .roles-section,.flow-section{padding:60px 24px;}
+}
+@media(max-width:500px){
+  .roles-grid{grid-template-columns:1fr;}
+  .hero-actions{flex-direction:column;align-items:stretch;}
+  .btn-hero-primary,.btn-hero-ghost{justify-content:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-wrap">
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+</div>
+
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-logo">C</div>
+    <div>
+      <span class="nav-name">ConfSys</span>
+      <span class="nav-tag">Management Hub</span>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="/login/" class="nav-btn nav-btn-ghost">Login</a>
+    <a href="/register/" class="nav-btn nav-btn-primary">Register</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Conference Management Platform
+    </div>
+    <h1 class="hero-title">
+      <span class="block">Manage Your Conference</span>
+      <span class="block accent">End to End</span>
+    </h1>
+    <p class="hero-sub">
+      A complete platform for organizing academic conferences — from paper submissions and peer reviews to session scheduling and participant registration.
+    </p>
+    <div class="hero-actions">
+      <a href="/login/" class="btn-hero-primary">
+        <i class="fas fa-arrow-right-to-bracket"></i>
+        Login to Dashboard
+      </a>
+      <a href="/register/" class="btn-hero-ghost">
+        <i class="fas fa-user-plus"></i>
+        Register as Participant
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">4</div>
+        <div class="hero-stat-lbl">User Roles</div>
+      </div>
+      <div style="width:1px;height:40px;background:var(--c-border);"></div>
+      <div>
+        <div class="hero-stat-num">100%</div>
+        <div class="hero-stat-lbl">Role Based Access</div>
+      </div>
+      <div style="width:1px;height:40px;background:var(--c-border);"></div>
+      <div>
+        <div class="hero-stat-num">Free</div>
+        <div class="hero-stat-lbl">Open to Join</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="roles-section">
+  <p class="section-label">Who can join</p>
+  <h2 class="section-title">Built for Every Role</h2>
+  <p class="section-sub">Each role has its own dashboard, permissions, and workflow. Everyone sees exactly what they need.</p>
+  <div class="roles-grid">
+    <div class="role-card rc-admin">
+      <div class="role-icon ri-admin"><i class="fas fa-shield-halved"></i></div>
+      <div class="role-name">Admin</div>
+      <div class="role-desc">Manage all users, assign papers to reviewers, schedule sessions, and oversee the entire conference.</div>
+      <a href="/login/" class="role-action ra-primary"><i class="fas fa-arrow-right"></i> Admin Login</a>
+    </div>
+    <div class="role-card rc-author">
+      <div class="role-icon ri-author"><i class="fas fa-pen-nib"></i></div>
+      <div class="role-name">Author</div>
+      <div class="role-desc">Submit your research papers, track review status, and get notified when your paper is accepted.</div>
+      <a href="/author-register/" class="role-action ra-info"><i class="fas fa-user-plus"></i> Register as Author</a>
+    </div>
+    <div class="role-card rc-reviewer">
+      <div class="role-icon ri-reviewer"><i class="fas fa-user-check"></i></div>
+      <div class="role-name">Reviewer</div>
+      <div class="role-desc">Review assigned papers, provide expert feedback, and help maintain the quality of the conference.</div>
+      <a href="/login/" class="role-action ra-success"><i class="fas fa-arrow-right"></i> Reviewer Login</a>
+    </div>
+    <div class="role-card rc-participant">
+      <div class="role-icon ri-participant"><i class="fas fa-ticket"></i></div>
+      <div class="role-name">Participant</div>
+      <div class="role-desc">Browse conference sessions, register for the ones you want to attend, and generate your event badge.</div>
+      <a href="/register/" class="role-action ra-warning"><i class="fas fa-user-plus"></i> Register Free</a>
+    </div>
+  </div>
+</section>
+
+<section class="flow-section">
+  <div class="flow-inner">
+    <p class="section-label">How it works</p>
+    <h2 class="section-title">Conference Flow</h2>
+    <p class="section-sub">From paper submission to session day — everything managed in one place.</p>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-num"><i class="fas fa-pen"></i></div>
+        <div class="flow-step-title">Author Submits</div>
+        <div class="flow-step-desc">Research paper uploaded with title and abstract</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num"><i class="fas fa-user-check"></i></div>
+        <div class="flow-step-title">Admin Assigns</div>
+        <div class="flow-step-desc">Paper assigned to an expert reviewer</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num"><i class="fas fa-magnifying-glass"></i></div>
+        <div class="flow-step-title">Peer Review</div>
+        <div class="flow-step-desc">Reviewer accepts or rejects with comments</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num"><i class="fas fa-calendar-days"></i></div>
+        <div class="flow-step-title">Session Scheduled</div>
+        <div class="flow-step-desc">Accepted papers assigned to conference sessions</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num"><i class="fas fa-ticket"></i></div>
+        <div class="flow-step-title">Participants Join</div>
+        <div class="flow-step-desc">Register for sessions and get event badges</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">ConfSys</div>
+  <div class="footer-sub">Conference Management System · Built with Django</div>
+</footer>
+
+</body>
+</html>
