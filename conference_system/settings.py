@@ -8,7 +8,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-yo80(2i@3xf6x@4wa^s8^8mf^3yec9q%sbq@o!%-c2ih3culel'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-yo80(2i@3xf6x@4wa^s8^8mf^3yec9q%sbq@o!%-c2ih3culel')
 
 DEBUG = False
 
