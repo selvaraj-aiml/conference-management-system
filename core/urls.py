@@ -4,7 +4,7 @@ from . import views
 from users.views import add_user, submit_paper, register, author_register
 
 urlpatterns = [
-    path('', lambda request: redirect('login')),
+    path('', views.home, name='home'),
 
     path('register/', register, name='register'),
     path('author-register/', author_register, name='author_register'),

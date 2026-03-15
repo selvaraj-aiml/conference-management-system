@@ -4,6 +4,11 @@ from django.contrib import messages
 from core.models import Paper, Profile, ReviewAssignment, ConferenceSession, PaperPresentation, SessionRegistration
 from users.models import User
 
+def home(request):
+    if request.user.is_authenticated:
+        return redirect(request.user.get_dashboard_url())
+    return render(request, 'home.html')
+
 
 @login_required
 def admin_dashboard(request):

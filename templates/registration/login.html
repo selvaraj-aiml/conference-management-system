@@ -4,58 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | ConfSys</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <style>
-        /* --- CORE DESIGN SYSTEM --- */
         :root {
-            --c-bg: #f4f7fe; 
-            --c-surface: #ffffff; 
+            --c-bg: #f4f7fe;
+            --c-surface: #ffffff;
             --c-border-l: #cbd5e1;
-            
-            --primary: #4f46e5; 
+            --primary: #4f46e5;
             --primary-dim: rgba(79, 70, 229, 0.08);
             --primary-glow: rgba(79, 70, 229, 0.25);
-            
-            --text-1: #0f172a; 
-            --text-2: #475569; 
+            --text-1: #0f172a;
+            --text-2: #475569;
             --text-3: #94a3b8;
-            
             --f-head: 'Space Grotesk', sans-serif;
             --f-body: 'Plus Jakarta Sans', sans-serif;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            font-family: var(--f-body); 
-            background: var(--c-bg); 
-            color: var(--text-1); 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
+        body {
+            font-family: var(--f-body);
+            background: var(--c-bg);
+            color: var(--text-1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
             justify-content: center;
             overflow: hidden;
             position: relative;
         }
-
-        /* --- AMBIENT ANIMATED BACKGROUND --- */
         .orb { position: absolute; border-radius: 50%; filter: blur(80px); z-index: 0; animation: floatOrb 15s ease-in-out infinite alternate; }
         .orb-1 { width: 500px; height: 500px; background: rgba(79, 70, 229, 0.15); top: -10%; left: -10%; }
         .orb-2 { width: 400px; height: 400px; background: rgba(14, 165, 233, 0.15); bottom: -10%; right: -5%; animation-delay: -5s; }
-        
         @keyframes floatOrb {
             0% { transform: translate(0, 0) scale(1); }
             50% { transform: translate(30px, 50px) scale(1.1); }
             100% { transform: translate(-20px, 20px) scale(0.9); }
         }
-
-        /* --- LOGIN CARD --- */
         .login-wrapper {
             position: relative;
             z-index: 10;
@@ -63,7 +49,6 @@
             max-width: 440px;
             padding: 20px;
         }
-
         .login-card {
             background: var(--c-surface);
             border-radius: 24px;
@@ -73,10 +58,7 @@
             opacity: 0;
             transform: translateY(30px);
         }
-
         @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-
-        /* --- LOGO & HEADER --- */
         .brand-logo {
             width: 56px; height: 56px; border-radius: 16px;
             background: linear-gradient(135deg, var(--primary), #3b82f6);
@@ -84,33 +66,24 @@
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 24px; box-shadow: 0 10px 20px var(--primary-glow);
         }
-        
         .login-header { text-align: center; margin-bottom: 32px; }
         .login-header h1 { font-family: var(--f-head); font-size: 1.75rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
         .login-header p { color: var(--text-2); font-size: 0.95rem; }
-
-        /* --- FORM ELEMENTS --- */
         .input-group { position: relative; margin-bottom: 20px; }
         .input-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-1); margin-bottom: 8px; }
-        
         .input-icon-wrapper { position: relative; }
         .input-icon-wrapper i {
             position: absolute; top: 50%; left: 16px; transform: translateY(-50%);
             color: var(--text-3); font-size: 1.1rem; transition: color 0.3s;
         }
-        
         .input-control {
             width: 100%; padding: 14px 16px 14px 44px;
             font-size: 0.95rem; font-family: var(--f-body); color: var(--text-1);
             background: var(--c-bg); border: 1px solid var(--c-border-l);
             border-radius: 12px; transition: all 0.3s ease; outline: none;
         }
-        
         .input-control:focus { background: var(--c-surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-dim); }
-        .input-control:focus + i { color: var(--primary); }
         .input-control::placeholder { color: var(--text-3); }
-
-        /* --- SUBMIT BUTTON --- */
         .btn-submit {
             width: 100%; padding: 16px; border: none; border-radius: 12px;
             background: var(--primary); color: white; font-family: var(--f-body);
@@ -123,8 +96,6 @@
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(79, 70, 229, 0.35); background: #4338ca; }
         .btn-submit i { transition: transform 0.3s; }
         .btn-submit:hover i { transform: translateX(4px); }
-
-        /* --- ERROR ALERT --- */
         .error-banner {
             background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
             padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
@@ -132,35 +103,38 @@
             animation: shake 0.5s ease-in-out;
         }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-
-        .sys-footer { text-align: center; margin-top: 24px; font-size: 0.75rem; color: var(--text-3); font-weight: 500; }
+        .divider{display:flex;align-items:center;gap:12px;margin:24px 0;}
+        .divider-line{flex:1;height:1px;background:var(--c-border-l);}
+        .divider-text{font-size:0.75rem;color:var(--text-3);font-weight:600;white-space:nowrap;}
+        .register-links{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+        .reg-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:10px;font-size:0.8rem;font-weight:700;font-family:var(--f-body);text-decoration:none;transition:all 0.2s;border:1px solid var(--c-border-l);}
+        .reg-btn-participant{background:rgba(245,158,11,0.06);color:#b45309;border-color:rgba(245,158,11,0.2);}
+        .reg-btn-participant:hover{background:rgba(245,158,11,0.12);transform:translateY(-1px);}
+        .reg-btn-author{background:rgba(14,165,233,0.06);color:#0369a1;border-color:rgba(14,165,233,0.2);}
+        .reg-btn-author:hover{background:rgba(14,165,233,0.12);transform:translateY(-1px);}
+        .back-home{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;font-size:0.8rem;color:var(--text-3);text-decoration:none;transition:color 0.2s;font-weight:600;}
+        .back-home:hover{color:var(--primary);}
+        .sys-footer { text-align: center; margin-top: 16px; font-size: 0.75rem; color: var(--text-3); font-weight: 500; }
     </style>
 </head>
 <body>
-
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
-
     <div class="login-wrapper">
         <div class="login-card">
-            
             <div class="brand-logo">C</div>
-            
             <div class="login-header">
                 <h1>Welcome Back</h1>
                 <p>Sign in to ConfSys to manage your events.</p>
             </div>
-
             {% if form.errors %}
             <div class="error-banner">
                 <i class="fas fa-exclamation-circle"></i>
                 Invalid username or password. Please try again.
             </div>
             {% endif %}
-
             <form method="post">
                 {% csrf_token %}
-
                 <div class="input-group">
                     <label for="id_username">Username</label>
                     <div class="input-icon-wrapper">
@@ -168,7 +142,6 @@
                         <i class="fas fa-user"></i>
                     </div>
                 </div>
-
                 <div class="input-group">
                     <label for="id_password">Password</label>
                     <div class="input-icon-wrapper">
@@ -176,18 +149,28 @@
                         <i class="fas fa-lock"></i>
                     </div>
                 </div>
-
                 <button type="submit" class="btn-submit">
                     Secure Sign In <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
-
-            <div class="sys-footer">
-                Conference Management System &copy; 2026
+            <div class="divider">
+                <div class="divider-line"></div>
+                <div class="divider-text">New here? Create an account</div>
+                <div class="divider-line"></div>
             </div>
-            
+            <div class="register-links">
+                <a href="/register/" class="reg-btn reg-btn-participant">
+                    <i class="fas fa-ticket"></i> Participant
+                </a>
+                <a href="/author-register/" class="reg-btn reg-btn-author">
+                    <i class="fas fa-pen-nib"></i> Author
+                </a>
+            </div>
+            <a href="/" class="back-home">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+            <div class="sys-footer">Conference Management System &copy; 2026</div>
         </div>
     </div>
-
 </body>
 </html>
