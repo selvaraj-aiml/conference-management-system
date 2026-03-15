@@ -8,16 +8,12 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# SECURITY
 SECRET_KEY = 'django-insecure-yo80(2i@3xf6x@4wa^s8^8mf^3yec9q%sbq@o!%-c2ih3culel'
 
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-
-# APPLICATIONS
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -25,19 +21,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'users',
     'core',
 ]
 
-
-# MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-
-    # Serve static files on Render
     'whitenoise.middleware.WhiteNoiseMiddleware',
-
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -46,11 +36,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 ROOT_URLCONF = 'conference_system.urls'
 
-
-# TEMPLATES
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -66,11 +53,8 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = 'conference_system.wsgi.application'
 
-
-# DATABASE
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -78,8 +62,6 @@ DATABASES = {
     }
 }
 
-
-# PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -95,48 +77,22 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# INTERNATIONALIZATION
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
+
 USE_TZ = True
 
-
-# STATIC FILES
 STATIC_URL = '/static/'
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-
-# DEFAULT PRIMARY KEY
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# CUSTOM USER MODEL
 AUTH_USER_MODEL = 'users.User'
 
-
-# LOGIN SETTINGS
 LOGIN_URL = 'login'
+
 LOGIN_REDIRECT_URL = 'redirect_after_login'
-
-
-# -------------------------------------------------
-# AUTO CREATE ADMIN USER ON RENDER (FREE SHELL FIX)
-# -------------------------------------------------
-if os.environ.get("RENDER") == "true":
-    import django
-    django.setup()
-
-    from django.contrib.auth import get_user_model
-
-    User = get_user_model()
-
-    if not User.objects.filter(username="admin").exists():
-        User.objects.create_superuser(
-            username="admin",
-            email="admin@example.com",
-            password="admin123"
-        )
