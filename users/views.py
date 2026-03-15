@@ -97,3 +97,33 @@ def register(request):
             return redirect('participant_dashboard')
 
     return render(request, 'registration/register.html')
+
+
+def author_register(request):
+    if request.user.is_authenticated:
+        return redirect(request.user.get_dashboard_url())
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not username or not email or not password:
+            messages.error(request, 'Please fill all fields.')
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already taken.')
+        elif password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+        else:
+            User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                role='author',
+                is_active=False
+            )
+            messages.success(request, 'Registration submitted! Wait for admin approval.')
+            return redirect('login')
+
+    return render(request, 'registration/author_register.html')

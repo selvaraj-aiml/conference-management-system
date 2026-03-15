@@ -4,22 +4,23 @@ from django.contrib import messages
 from core.models import Paper, Profile, ReviewAssignment, ConferenceSession, PaperPresentation, SessionRegistration
 from users.models import User
 
+
 @login_required
 def admin_dashboard(request):
     if request.user.role != 'admin':
         return redirect(request.user.get_dashboard_url())
 
     stats = {
-        'total_authors': Profile.objects.filter(role='author').count(),
-        'total_reviewers': Profile.objects.filter(role='reviewer').count(),
-        'total_participants': Profile.objects.filter(role='participant').count(),
+        'total_authors': User.objects.filter(role='author', is_active=True).count(),
+        'total_reviewers': User.objects.filter(role='reviewer').count(),
+        'total_participants': User.objects.filter(role='participant').count(),
         'total_papers': Paper.objects.count(),
         'pending_reviews': Paper.objects.filter(status='under_review').count(),
     }
 
     papers = Paper.objects.all().order_by('-created_at')
+    pending_authors = User.objects.filter(role='author', is_active=False)
 
-    # For assign form (if POST)
     if request.method == 'POST' and 'assign_reviewer' in request.POST:
         paper_id = request.POST.get('paper_id')
         reviewer_id = request.POST.get('reviewer_id')
@@ -42,19 +43,21 @@ def admin_dashboard(request):
         'stats': stats,
         'papers': papers,
         'reviewers': reviewers,
+        'pending_authors': pending_authors,
     })
+
 
 @login_required
 def author_dashboard(request):
     if request.user.role != 'author':
         return redirect(request.user.get_dashboard_url())
 
-    # Get only THIS author's papers, newest first
     papers = Paper.objects.filter(author=request.user).order_by('-created_at')
 
     return render(request, "dashboards/author_dashboard.html", {
         'papers': papers,
     })
+
 
 @login_required
 def reviewer_dashboard(request):
@@ -62,12 +65,12 @@ def reviewer_dashboard(request):
         messages.error(request, "Only reviewers can access this dashboard.")
         return redirect(request.user.get_dashboard_url())
 
-    # Get only papers assigned to this reviewer
     assigned_papers = Paper.objects.filter(reviewer=request.user).order_by('-created_at')
 
     return render(request, "dashboards/reviewer_dashboard.html", {
         'assigned_papers': assigned_papers,
     })
+
 
 @login_required
 def participant_dashboard(request):
@@ -75,7 +78,6 @@ def participant_dashboard(request):
         return redirect(request.user.get_dashboard_url())
 
     sessions = ConferenceSession.objects.order_by('date', 'start_time')
-
     registrations = SessionRegistration.objects.filter(participant=request.user).values_list('session_id', flat=True)
 
     return render(request, "dashboards/participant_dashboard.html", {
@@ -83,8 +85,10 @@ def participant_dashboard(request):
         'registrations': registrations,
     })
 
+
 def is_admin(user):
     return user.is_authenticated and user.role == 'admin'
+
 
 @user_passes_test(is_admin)
 def manage_users(request):
@@ -99,6 +103,7 @@ def manage_users(request):
     }
 
     return render(request, 'admin/manage_users.html', context)
+
 
 @user_passes_test(is_admin)
 def update_user(request, user_id):
@@ -121,6 +126,7 @@ def update_user(request, user_id):
 
     return redirect("manage_users")
 
+
 @login_required
 def review_paper(request, paper_id):
     paper = get_object_or_404(Paper, id=paper_id, reviewer=request.user)
@@ -141,11 +147,13 @@ def review_paper(request, paper_id):
         "paper": paper,
     })
 
+
 @login_required
 @user_passes_test(is_admin)
 def admin_session_list(request):
     sessions = ConferenceSession.objects.order_by('date', 'start_time')
     return render(request, 'admin/sessions/list.html', {'sessions': sessions})
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -164,6 +172,7 @@ def admin_session_create(request):
         return redirect('admin_session_list')
 
     return render(request, 'admin/sessions/create.html')
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -184,6 +193,7 @@ def admin_session_edit(request, session_id):
 
     return render(request, 'admin/sessions/edit.html', {'session': session})
 
+
 @login_required
 @user_passes_test(is_admin)
 def admin_assign_paper_to_session(request, paper_id):
@@ -199,7 +209,7 @@ def admin_assign_paper_to_session(request, paper_id):
 
         try:
             session = ConferenceSession.objects.get(id=session_id)
-            
+
             if PaperPresentation.objects.filter(paper=paper).exists():
                 messages.error(request, "This paper is already assigned to a session.")
             else:
@@ -223,6 +233,19 @@ def admin_assign_paper_to_session(request, paper_id):
         'sessions': sessions,
     })
 
+
+@login_required
+def approve_author(request, user_id):
+    if request.user.role != 'admin':
+        return redirect(request.user.get_dashboard_url())
+
+    author = get_object_or_404(User, id=user_id, role='author', is_active=False)
+    author.is_active = True
+    author.save()
+    messages.success(request, f'Author "{author.username}" approved successfully!')
+    return redirect('admin_dashboard')
+
+
 @login_required
 def register_for_session(request, session_id):
     if request.user.role != 'participant':
@@ -241,6 +264,7 @@ def register_for_session(request, session_id):
         return redirect('participant_dashboard')
 
     return render(request, 'dashboards/register_session.html', {'session': session})
+
 
 @login_required
 def generate_badge(request):

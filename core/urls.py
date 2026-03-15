@@ -1,12 +1,13 @@
 from django.urls import path
 from django.shortcuts import redirect
 from . import views
-from users.views import add_user, submit_paper, register
+from users.views import add_user, submit_paper, register, author_register
 
 urlpatterns = [
     path('', lambda request: redirect('login')),
 
     path('register/', register, name='register'),
+    path('author-register/', author_register, name='author_register'),
 
     path('admin-dashboard/', views.admin_dashboard, name="admin_dashboard"),
     path('author-dashboard/', views.author_dashboard, name="author_dashboard"),
@@ -25,6 +26,8 @@ urlpatterns = [
     path('sessions/<int:session_id>/edit/', views.admin_session_edit, name='admin_session_edit'),
 
     path('assign-paper/<int:paper_id>/', views.admin_assign_paper_to_session, name='admin_assign_paper_to_session'),
+
+    path('approve-author/<int:user_id>/', views.approve_author, name='approve_author'),
 
     path('register-session/<int:session_id>/', views.register_for_session, name='register_for_session'),
     path('generate-badge/', views.generate_badge, name='generate_badge'),
