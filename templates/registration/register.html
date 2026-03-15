@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | ConfSys{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:60px auto;">
+  <div style="background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r);padding:40px;box-shadow:var(--shadow-md);">
+    
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="width:56px;height:56px;border-radius:16px;background:var(--primary-dim);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 16px;">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2 style="font-family:var(--f-head);font-size:1.5rem;font-weight:700;color:var(--text-1);">Create Account</h2>
+      <p style="color:var(--text-2);font-size:0.875rem;margin-top:6px;">Register as a Conference Participant</p>
+    </div>
+
+    {% if messages %}
+    <div style="margin-bottom:20px;">
+      {% for message in messages %}
+      <div style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:12px 16px;border-radius:10px;font-size:0.875rem;font-weight:600;margin-bottom:8px;">
+        <i class="fas fa-xmark" style="margin-right:8px;"></i>{{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--text-1);margin-bottom:8px;">Username</label>
+        <input type="text" name="username" placeholder="Enter your username" required
+          style="width:100%;padding:11px 14px;border:1px solid var(--c-border);border-radius:10px;font-size:0.875rem;font-family:var(--f-body);color:var(--text-1);outline:none;transition:border 0.2s;background:var(--c-surface);"
+          onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--c-border)'">
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--text-1);margin-bottom:8px;">Email</label>
+        <input type="email" name="email" placeholder="Enter your email" required
+          style="width:100%;padding:11px 14px;border:1px solid var(--c-border);border-radius:10px;font-size:0.875rem;font-family:var(--f-body);color:var(--text-1);outline:none;transition:border 0.2s;background:var(--c-surface);"
+          onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--c-border)'">
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--text-1);margin-bottom:8px;">Password</label>
+        <input type="password" name="password" placeholder="Enter your password" required
+          style="width:100%;padding:11px 14px;border:1px solid var(--c-border);border-radius:10px;font-size:0.875rem;font-family:var(--f-body);color:var(--text-1);outline:none;transition:border 0.2s;background:var(--c-surface);"
+          onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--c-border)'">
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--text-1);margin-bottom:8px;">Confirm Password</label>
+        <input type="password" name="confirm_password" placeholder="Confirm your password" required
+          style="width:100%;padding:11px 14px;border:1px solid var(--c-border);border-radius:10px;font-size:0.875rem;font-family:var(--f-body);color:var(--text-1);outline:none;transition:border 0.2s;background:var(--c-surface);"
+          onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--c-border)'">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+
+    <div style="text-align:center;margin-top:20px;font-size:0.875rem;color:var(--text-2);">
+      Already have an account?
+      <a href="{% url 'login' %}" style="color:var(--primary);font-weight:700;text-decoration:none;">Login here</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+
